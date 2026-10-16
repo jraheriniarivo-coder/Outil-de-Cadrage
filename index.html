@@ -469,6 +469,18 @@ function fillInfo() {
 function renderTable() {
   const tbody = document.getElementById('actions-body');
   tbody.innerHTML = '';
+
+  if (!state.actions || state.actions.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="13" style="text-align:center;padding:40px 20px;color:var(--text-light);font-style:italic">
+          <i class="fas fa-inbox" style="font-size:32px;display:block;margin-bottom:12px;opacity:.4"></i>
+          Aucune action dans ce projet.<br>
+          <span style="font-size:12px">Cliquez sur <strong>« Ajouter une action »</strong> ou <strong>« Importer un Excel »</strong> pour commencer.</span>
+        </td>
+      </tr>`;
+    return;
+  }
   state.actions.forEach((a, i) => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -595,19 +607,20 @@ function saveLocal() {
 }
 
 function resetAll() {
-  if (!confirm('Réinitialiser les données du projet en cours ?')) return;
+  if (!confirm('Remettre le projet complètement à zéro ?\n\n(Client, Projet, Types ET Actions seront effacés)')) return;
   const proj = getCurrentProject();
   if (!proj) return;
-  proj.actions = JSON.parse(JSON.stringify(DEFAULT_ACTIONS));
-  proj.client = proj.client || '';
-  proj.projet = proj.projet || '';
+  proj.actions = [];
+  proj.client = '';
+  proj.projet = '';
   proj.type1 = '';
   proj.type2 = '';
+  proj.name = 'Nouveau projet';
   proj.updated = new Date().toISOString();
   saveApp();
   loadCurrentIntoUI();
   refreshProjectSelect();
-  showToast('Projet réinitialisé', 'success');
+  showToast('Projet remis à zéro ✓', 'success');
 }
 
 /* =========================================================
