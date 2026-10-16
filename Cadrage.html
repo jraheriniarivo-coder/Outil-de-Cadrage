@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fiche de Cadrage — Connecteo</title>
+<link href="https://fonts.googleapis.com/css2?family=Mada:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="libs/exceljs.min.js"></script>
+<script src="libs/FileSaver.min.js"></script>
+<style>
+:root{
+  --primary:#00afa9;--primary-dark:#008a86;
+  --accent:#ffa900;--sapphire:#0d47a1;--violet:#7c4dff;
+  --success:#096475;--danger:#c62828;--warning:#f52900;
+  --text-dark:#212121;--text-medium:#424242;--text-light:#757575;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Mada',sans-serif;background:#f0f4f8;min-height:100vh;color:var(--text-dark);overflow-x:hidden}
+
+/* FOND ANIMÉ */
+.bg-decor{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bg-decor .orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.35;animation:float 18s ease-in-out infinite}
+.bg-decor .orb:nth-child(1){width:500px;height:500px;background:radial-gradient(circle,rgba(0,175,169,.5),transparent 70%);top:-150px;right:-100px}
+.bg-decor .orb:nth-child(2){width:400px;height:400px;background:radial-gradient(circle,rgba(255,169,0,.4),transparent 70%);bottom:-100px;left:-100px;animation-delay:-6s}
+.bg-decor .orb:nth-child(3){width:350px;height:350px;background:radial-gradient(circle,rgba(124,77,255,.3),transparent 70%);top:40%;left:50%;animation-delay:-12s}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-40px) scale(1.1)}66%{transform:translate(-20px,30px) scale(.95)}}
+
+/* NAVBAR */
+.navbar{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.85);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid rgba(255,255,255,.5);box-shadow:0 2px 20px rgba(0,0,0,.04)}
+.navbar-inner{max-width:1500px;margin:0 auto;padding:14px 28px;display:flex;align-items:center;gap:20px}
+.navbar .logo{
+  width:160px;
+  height:36px;
+  background-image:url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiBpZD0iQ2FscXVlXzEiIGRhdGEtbmFtZT0iQ2FscXVlIDEiIHZpZXdCb3g9IjAgMCAxMDAwIDEwMDAiPgogIDxkZWZzPgogICAgPHN0eWxlPgogICAgICAuY2xzLTEge2ZpbGw6ICNmZmY7fQogICAgICAuY2xzLTIge2ZpbGw6IG5vbmU7fQogICAgICAuY2xzLTMge2ZpbGw6ICM4Nzg1ODc7fQogICAgICAuY2xzLTQge2ZpbGw6ICNjY2UxZTE7fQogICAgICAuY2xzLTUge2ZpbGw6ICMwMGFlYTk7fQogICAgICAuY2xzLTYge2NsaXAtcGF0aDogdXJsKCNjbGlwcGF0aCk7fQogICAgPC9zdHlsZT4KICAgIDxjbGlwUGF0aCBpZD0iY2xpcHBhdGgiPjxwb2x5bGluZSBjbGFzcz0iY2xzLTIiIHBvaW50cz0iMTE4LjI1IDU1NS4zNCA4ODguOTggNTU1LjM0IDg4OC45OCAzOTAuMzUgMTE4LjI1IDM5MC4zNSAxMTguMjUgNTU1LjM0Ij48L3BvbHlsaW5lPjwvY2xpcFBhdGg+CiAgPC9kZWZzPgogIDxnIGNsYXNzPSJjbHMtNiI+PHBhdGggY2xhc3M9ImNscy00IiBkPSJNMzI4LjI2LDUwOS4yN2MuMDQtLjA2LjA3LS4xMi4xMS0uMTgtLjA0LjE3LS4wNy4xNy0uMTEuMThNNDMwLjQsNTA5LjI3Yy4wNC0uMDYuMDctLjEyLjExLS4xOC0uMDQuMTctLjA3LjE3LS4xMS4xOE0xNjguNTIsNTExLjg1YzAtMy44MSwxLjM5LTguNjgsNC0xNC4wOC4yNy0uNTYuNTUtMS4xMi44NC0xLjY3LDMuNjgsMy41Myw4LjI1LDUuOCwxMy4yNiw2LjU2LTIuOTUsMi42Ny02LjAxLDQuODItOS4xNCw2LjQtMy4yNiwxLjY1LTYuMzMsMi42MS04Ljk2LDIuNzhNNTk3LjgyLDUxMS44NWMwLTMuODEsMS4zOS04LjY4LDQuMDEtMTQuMDguMjctLjU2LjU1LTEuMTIuODMtMS42NywzLjY3LDMuNTIsOC4yMyw1Ljc4LDEzLjIyLDYuNTYtMi45NiwyLjY4LTYuMDEsNC44My05LjEzLDYuNDEtMy4zLDEuNjgtNi4zLDIuNjEtOC45MywyLjc4TTY3MS45NSw1MTEuMzNjLjI2LTQuOTEsMS42My0xMi42Miw1Ljk4LTI0LjEyLDMuNjktLjEzLDcuNTgtLjMyLDExLjY0LS41Ny0yLjQsNC45Mi00LjE2LDkuNzgtNS4yOSwxNC41NS0xLjk3LDIuMjgtMy45OSw0LjI5LTYuMDQsNS45OS0yLjIsMS44Mi00LjMyLDMuMjMtNi4yOCw0LjE2TTY5Mi42NiwzOTAuMzVoLS44NGMtMTMuOTkuMjUtMjQuMjQsMTIuOTktMzEuNjMsMjQuMS02LjA5LDkuMTYtMTEuOTIsMTkuNzctMTcuMzksMzEuNjNsLTguMDItLjg3Yy00LjU3LTMuMTgtMTEuNDUtNi4wMy0yMS40My02LjAzLTExLjM5LDAtMjIuNTIsMy43NC0zMy4wNiwxMS4xMS0yLjE0LDEuNDktNC4xOCwzLjA5LTYuMTUsNC43OC0yLjI1LTQuNjQtNS40OC03Ljc4LTguMzktOS44NC01LjkzLTQuMTgtMTMuMDMtNi4zMS0yMS4wOS02LjMxLTEyLjEyLDAtMjQuMTgsNC4yMi0zNS44NSwxMi41Ni04LjQ3LDYuMDQtMTUuODQsMTMuNDEtMjEuOTIsMjEuOS0uODYtNy4xLTMuMTYtMTMuNTYtNi44NS0xOS4yOC02LjIxLTkuNTktMTUuOTgtMTQuODctMjcuNTEtMTQuODctOC4zOSwwLTE2LjU1LDIuNzQtMjQuMzYsOC4xNi0uMTctLjItLjM0LS4zOS0uNTEtLjU5LTQuNDUtNC44OS0xMC44OS03LjU4LTE4LjEzLTcuNTgtNS4yNywwLTEwLjQxLDEuNTMtMTUuMjgsNC41NS0zLjg4LDIuNC03LjA5LDUuMzUtOS41NCw4Ljc1bC0xLjY5LDIuMzYtLjQ3LDIuODNjLS4yMSwxLjI3LS40NCwyLjY0LS42OSw0LjEtMS4wNi0yLjctMi4zOS01LjI4LTMuOTctNy43My02LjIxLTkuNTktMTUuOTgtMTQuODctMjcuNTEtMTQuODctOC4zOSwwLTE2LjU1LDIuNzQtMjQuMzYsOC4xNi0uMTctLjItLjM0LS4zOS0uNTEtLjU5LTQuNDUtNC44OS0xMC44OS03LjU4LTE4LjEzLTcuNTgtNS4yNywwLTEwLjQxLDEuNTMtMTUuMjgsNC41NS0xLjIxLjc1LTIuNTgsMS43Ny0zLjkxLDIuODUtNC43Ny00LjI0LTEyLjI1LTguMTUtMjMuNzEtOC40OC0uMzIsMC0uNjQtLjAxLS45NS0uMDEtOS40NSwwLTE3LjYxLDMuMDQtMjMuNzEsOC45NS0yLjI4LDIuMjItNC4yMiw0Ljc5LTUuNzgsNy42OC0uMzEsMC0uNjItLjAxLS45My0uMDEtMy4wOSwwLTYuMjkuMzYtOS40MywxLjM1LTIuNjUuODMtNS4wOSwxLjkyLTcuMzQsMy4yMS0xLjUxLTQuMTMtMy45My03Ljg4LTcuMjItMTEuMTEtNC4yLTQuMTEtMTEuOTYtOS4wMi0yNS4wNi05LjAyLTExLjM5LDAtMjIuNTEsMy43NC0zMy4wNiwxMS4xMS05LjY4LDYuNzctMTcuNjIsMTUuNjMtMjMuNTgsMjYuMzQtNi4wNywxMC45LTkuMTUsMjIuMzMtOS4xNSwzMy45NiwwLDEzLjQsNCwyNC4xNSwxMS44OSwzMS45NCw3LjkxLDcuOCwxOC42NiwxMS45MiwzMS4wOCwxMS45MiwxMC4wOCwwLDIwLjI5LTIuNTgsMzAuMzctNy42NywyLjAyLTEuMDMsNC4wMS0yLjEzLDUuOTYtMy4zMiw0LjM4LDQuODQsMTAuMTcsOC4yNCwxNy4wNSw5Ljg1LDIuNzkuNjYsNS43Ni45OSw4LjgyLjk5LDEzLjg0LDAsMjkuMzgtNi45Myw0MS4zMy0xNy44bC42NiwzLjYzYzYuMTYsMTAuMDMsMTQuMDcsMTUuMTYsMjUuOCwxNS4yMWgxMy4zMmw0LjQxLTkuMDRjNi44Ni0xMy45MywxMy4zLTI3LjA3LDE5LjIzLTM2Ljg3LDAsMCwwLC4wMSwwLC4wMi0uODcsNC4wNy0xLjMxLDcuNTMtMS4zMSwxMC44OSwwLDkuMjYsMi45NSwxNy4zLDguNTMsMjMuNTMsNi4yMiw2Ljk1LDE0Ljk5LDEwLjU1LDI1LjM2LDEwLjU1LDYuNzcsMCw4Ljk5LTEuNiwxNC44NS00Ljc3LDQuNzcsMi42MywxNC4xMSw1LjY1LDE5Ljk2LDUuNjloMTEuMTVsNC4zOS05LjA1YzYuODYtMTMuOTMsMTMuMy0yNy4wNywxOS4yMy0zNi44NywwLDAsMCwuMDEsMCwuMDItLjg3LDQuMDctMS4zMSw3LjUzLTEuMzEsMTAuODksMCw5LjI2LDIuOTUsMTcuMyw4LjUzLDIzLjUzLDYuMjIsNi45NSwxNC45OSwxMC41NSwyNS4zNiwxMC41NSw2LjgzLDAsMTUuOTEtMS44MSwyNC45LTguODksNy44Miw1LjkyLDE3Ljc3LDguOSwyOS42NSw4LjksMTQuMjYsMCwyOC4wMy00LjM2LDQwLjk4LTEyLjk0LjM0LjM2LjY4LjcxLDEuMDMsMS4wNSw3LjkxLDcuOCwxOC42NiwxMS45MiwzMS4wOCwxMS45MiwxMC4wOCwwLDIwLjI5LTIuNTgsMzAuMzctNy42NywzLTEuNTIsNS45Mi0zLjIyLDguNzUtNS4xMS44NiwxLjA4LDEuNzksMi4xMiwyLjc5LDMuMSw2Ljg3LDYuNjksMTYuMzUsMTAuMjMsMjcuNCwxMC4yMywxMi40NCwwLDI0LjM0LTQuMTQsMzUuNDYtMTIuMzJsLjEuMDljOC4yMiw3LjY0LDE5LjI0LDExLjUyLDMyLjc0LDExLjUyczI2Ljg5LTMuOTksMzkuMzctMTEuODhjNC40OCw1LjM5LDEwLjU5LDkuMTksMTcuODksMTAuOSwyLjc5LjY2LDUuNzYuOTksOC44Mi45OSwxOC4xOSwwLDM5LjMyLTExLjk4LDUxLjM4LTI5LjEzLDEuNjMtMi4zMiw1LjEzLTcuNzQsOC4xNy0xMi41MSwyMy4wMy0uNTIsMjcuNTYtMTQuNiwyOC4yMi0xNy40MWw2Ljk5LTQzLjI5LTIyLjIxLDE0Ljg4Yy0xLjEtMy4zNCwzLjM1LTE1Ljg0LTEzLjgtMjQuNjQtNS42MS0yLjg4LTExLjQtNC0xNi44OC00LTExLjI5LDAtMjEuMjQsNC43OC0yNS40OCw4Ljg5LTIuMjgsMi4yMi00LjIyLDQuOC01Ljc5LDcuNjgtLjM2LS4wMS0uNzItLjAyLTEuMDktLjAyLTMuMDQsMC02LjE5LjM4LTkuMjcsMS4zNS0yLjc5Ljg3LTUuNDEsMi4wMy03Ljg4LDMuNDgtMi4wMi03LjI4LTYuMzQtMTEuNzgtMTAuMTMtMTQuNDYtNS45My00LjE4LTEzLjU1LTYuMzEtMjEuNjItNi4zMS05Ljc2LDAtMTguNzQsMi43NC0yOS41Myw4LjE3di0yLjM5cy03LjExLjg2LTE0LjUyLDEuNTJjLTcuNDEuNjYtMTIuMDYsMS4wMS0xMi4wNiwxLjAxLjIyLS4zNi41OC0uNzIuOC0xLjA4LDQuODMtNy45NSw4LjI4LTEzLjcxLDEwLjQxLTE3LjYzLDMuMzQtNi4xNiw0LjkyLTExLjMxLDQuOTItMTYuMiwwLTYuMTUtMi40OS0xMS43OS03LjA1LTE1LjkyLTQuMTctMy43NS05LjUzLTUuODUtMTUuMTUtNS45NSIvPjwvZz4KICA8cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik04NTkuNTQsNDYxLjE2Yy0xLjEtMy4zNCwzLjM1LTE1Ljg0LTEzLjgtMjQuNjQtMTcuMTYtOC44LTM2LjA3LTEuMjItNDIuMzcsNC44OS0yLjI4LDIuMjItNC4yMiw0LjgtNS43OSw3LjY4LTMuMzctLjEtNi45MS4yNS0xMC4zNiwxLjMzLTIuNzkuODctNS40MSwyLjAzLTcuODgsMy40OC0yLjAyLTcuMjgtNi4zNC0xMS43OC0xMC4xMy0xNC40Ni01LjkzLTQuMTgtMTMuNzEtNi4zMS0yMS43OC02LjMxLTkuNzYsMC0xOS45OCwyLjc0LTI5LjY5LDguMTd2LTIuMzlzLTYuOTUuODYtMTQuMzYsMS41MmMtNy40MS42Ni0xMS45OCwxLjAxLTExLjk4LDEuMDEuMjItLjM2LjYyLS43Mi44NC0xLjA4LDQuODMtNy45NSw4LjMtMTMuNzEsMTAuNDMtMTcuNjMsMy4zNC02LjE2LDQuOTQtMTEuMzEsNC45NC0xNi4yLDAtNi4xNS0yLjQ4LTExLjc5LTcuMDUtMTUuOTItNC4yOC0zLjg0LTkuOC01Ljk2LTE1LjU3LTUuOTYtMTQuMjEsMC0yNC41OSwxMi44OC0zMi4wNSwyNC4xLTYuMDksOS4xNi0xMS45MiwxOS43Ny0xNy4zOSwzMS42M2wtOC4wMi0uODdjLTQuNTctMy4xOC0xMS40NS02LjAzLTIxLjQzLTYuMDMtMTEuMzksMC0yMi41MiwzLjc0LTMzLjA2LDExLjExLTIuMTQsMS40OS00LjE4LDMuMDktNi4xNSw0Ljc4LTIuMjUtNC42NC01LjQ4LTcuNzgtOC4zOS05Ljg0LTUuOTMtNC4xOC0xMy4wMy02LjMxLTIxLjA5LTYuMzEtMTIuMTIsMC0yNC4xOCw0LjIyLTM1Ljg1LDEyLjU2LTguNDcsNi4wNC0xNS44NCwxMy40MS0yMS45MiwyMS45LS44Ni03LjEtMy4xNi0xMy41Ni02Ljg1LTE5LjI4LTYuMjEtOS41OS0xNS45OC0xNC44Ny0yNy41MS0xNC44Ny04LjM5LDAtMTYuNTUsMi43NC0yNC4zNiw4LjE2LS4xNy0uMi0uMzQtLjM5LS41MS0uNTktNC40NS00Ljg5LTEwLjg5LTcuNTgtMTguMTMtNy41OC01LjI3LDAtMTAuNDEsMS41My0xNS4yOCw0LjU1LTMuODgsMi40LTcuMDksNS4zNS05LjU0LDguNzVsLTEuNjksMi4zNi0uNDcsMi44M2MtLjIxLDEuMjctLjQ0LDIuNjQtLjY5LDQuMS0xLjA2LTIuNy0yLjM5LTUuMjgtMy45Ny03LjczLTYuMjEtOS41OS0xNS45OC0xNC44Ny0yNy41MS0xNC44Ny04LjM5LDAtMTYuNTUsMi43NC0yNC4zNiw4LjE2LS4xNy0uMi0uMzQtLjM5LS41MS0uNTktNC40NS00Ljg5LTEwLjg5LTcuNTgtMTguMTMtNy41OC01LjI3LDAtMTAuNDEsMS41My0xNS4yOCw0LjU1LTEuMjEuNzUtMi41OCwxLjc3LTMuOTEsMi44NS00Ljc4LTQuMjQtMTIuMjUtOC4xNS0yMy43MS04LjQ4LTkuODUtLjIxLTE4LjM2LDIuODMtMjQuNjYsOC45NC0yLjI4LDIuMjItNC4yMiw0Ljc5LTUuNzgsNy42OC0zLjM4LS4wOC02LjkxLjI1LTEwLjM2LDEuMzQtMi42NS44My01LjA5LDEuOTItNy4zNCwzLjIxLTEuNTEtNC4xMy0zLjkzLTcuODgtNy4yMi0xMS4xMS00LjItNC4xMi0xMS45Ni05LjAyLTI1LjA2LTkuMDItMTEuMzksMC0yMi41MSwzLjc0LTMzLjA2LDExLjExLTkuNjgsNi43Ny0xNy42MSwxNS42My0yMy41OCwyNi4zNC02LjA3LDEwLjktOS4xNSwyMi4zMy05LjE1LDMzLjk2LDAsMTMuNDEsNCwyNC4xNSwxMS44OSwzMS45NCw3LjkxLDcuOCwxOC42NiwxMS45MiwzMS4wOCwxMS45MiwxMC4wOCwwLDIwLjI5LTIuNTgsMzAuMzctNy42NywyLjAyLTEuMDMsNC4wMS0yLjEzLDUuOTYtMy4zMiw0LjM4LDQuODQsMTAuMTcsOC4yNCwxNy4wNSw5Ljg1LDIuNzkuNjYsNS43Ni45OSw4LjgyLjk5LDEzLjg0LDAsMjkuMzgtNi45Myw0MS4zMy0xNy44bC42NiwxLjE2YzYuMTksMTAuMDksMTYuNTMsMTUuODEsMjguMzYsMTUuODFoMTEuMDNsNC4xNC05LjY1YzYuOTQtMTQuMDksMTMuNDUtMjYuMTMsMTkuNDMtMzUuOTctLjA3LjMyLS4xNC42NS0uMjEuOTctLjg3LDQuMDctMS4zMSw3Ljg0LTEuMzEsMTEuMiwwLDkuMjYsMi45NSwxNy40NSw4LjUzLDIzLjY4LDYuMjIsNi45NSwxNC45OSwxMC42MywyNS4zNiwxMC42Myw2Ljc3LDAsMTMuMjEtMS43LDE5LjA2LTQuODcsNC44LDIuNjUsMTAuMjcsNCwxNi4xLDRoMTEuMDNsNC4xNC05LjY1YzYuOTQtMTQuMDksMTMuNDUtMjYuMTMsMTkuNDMtMzUuOTYtLjA3LjMyLS4xNC42NS0uMjEuOTctLjg3LDQuMDctMS4zMSw3Ljg0LTEuMzEsMTEuMiwwLDkuMjYsMi45NSwxNy40NSw4LjUzLDIzLjY4LDYuMjIsNi45NSwxNC45OSwxMC42MywyNS4zNiwxMC42Myw2LjgzLDAsMTUuOTEtMS43NywyNC45LTguODYsNy44Miw1LjkyLDE3Ljc3LDguOTIsMjkuNjUsOC45MiwxNC4yNiwwLDI4LjAzLTQuMzUsNDAuOTgtMTIuOTMuMzQuMzYuNjguNzEsMS4wMywxLjA2LDcuOTEsNy44LDE4LjY2LDExLjkyLDMxLjA4LDExLjkyLDEwLjA4LDAsMjAuMjktMi41OCwzMC4zNy03LjY3LDMtMS41Miw1LjkyLTMuMjIsOC43NS01LjExLjg2LDEuMDksMS43OSwyLjEyLDIuNzksMy4xLDYuODcsNi42OSwxNi4zNSwxMC4yMywyNy40LDEwLjIzLDEyLjQ0LDAsMjQuMzQtNC4xNCwzNS40Ni0xMi4zMi4wMy4wMy4wNy4wNi4xLjA5LDguMjIsNy42NCwxOS4yNCwxMS41MiwzMi43NCwxMS41MnMyNi44OS0zLjk5LDM5LjM3LTExLjg4YzQuNDgsNS4zOSwxMC41OSw5LjE5LDE3Ljg5LDEwLjksMi43OS42Niw1Ljc2Ljk5LDguODIuOTksMTguMTksMCwzOS4zMi0xMS45OCw1MS4zOC0yOS4xMywxLjYzLTIuMzIsNS4xMy03Ljc0LDguMTctMTIuNTEsMjMuMDMtLjUyLDI3LjU2LTE0LjYsMjguMjMtMTcuNDFsNi45OS00My4yOS0yMi4yMSwxNC44OFpNNTkwLjU4LDUwNi4xNmMwLTMuODEsMS4zOS04LjY4LDQuMDEtMTQuMDkuMjctLjU2LjU1LTEuMTIuODMtMS42NywzLjY3LDMuNTIsOC4yMyw1Ljc4LDEzLjIyLDYuNTYtMi45NiwyLjY4LTYuMDEsNC44My05LjEzLDYuNDEtMy4zLDEuNjgtNi4zLDIuNjEtOC45MywyLjc4TTY3Ny4wNCw0OTUuNWMtMS45NywyLjI4LTMuOTksNC4yOS02LjA0LDUuOTktMi4yLDEuODItNC4zMiwzLjIzLTYuMjgsNC4xNi4yNi00LjkxLDEuNjMtMTIuNjIsNS45OC0yNC4xMiwzLjY5LS4xMyw3LjU4LS4zMiwxMS42NC0uNTctMi40LDQuOTItNC4xNiw5Ljc4LTUuMjksMTQuNTVNMTYxLjI5LDUwNi4xNmMwLTMuODEsMS4zOS04LjY4LDQtMTQuMDguMjctLjU2LjU1LTEuMTIuODQtMS42NywzLjY4LDMuNTMsOC4yNSw1LjgsMTMuMjYsNi41Ni0yLjk1LDIuNjctNi4wMSw0LjgyLTkuMTQsNi40LTMuMjYsMS42NS02LjMzLDIuNjEtOC45NiwyLjc4Ij48L3BhdGg+CiAgPHBhdGggY2xhc3M9ImNscy0zIiBkPSJNODQ1Ljc0LDQzNi41MmMtMTcuMTYtOC44LTM2LjA3LTEuMjItNDIuMzcsNC44OS0yLjI4LDIuMjItNC4yMiw0LjgtNS43OSw3LjY4LTMuMzctLjEtNi45MS4yNS0xMC4zNiwxLjMzLTIuNzkuODgtNS40MSwyLjAzLTcuODgsMy40OC0yLjAyLTcuMjgtNi4zNC0xMS43OC0xMC4xMy0xNC40Ni01LjkzLTQuMTgtMTMuNy02LjMxLTIxLjc3LTYuMzEtMS43NSwwLTMuNTMuMTItNS4zMi4yOWwtMTEuMDguNzRzLTMyLjM0LDQuNDMtNDguNzEsNDYuOTFjLTE1LjU3LDQwLjM4LDMuNzIsNTQuNjUsNS42Niw1NS45Ni4wMi0uMDIuMDQtLjAzLjA3LS4wNS4wMy4wMy03LjAzLTUuNS4xLjA5LDcuMTMsNS41OSwxOS4yNCwxMS41MiwzMi43NCwxMS41MnMyNi44OS0zLjk5LDM5LjM3LTExLjg4YzQuNDgsNS4zOSwxMC41OSw5LjE5LDE3Ljg5LDEwLjksMi43OS42Niw1Ljc2Ljk5LDguODIuOTksMTguMTksMCwzOS4zMi0xMS45OCw1MS4zOC0yOS4xMywxLjYzLTIuMzIsNS4xMy03Ljc0LDguMTctMTIuNTEsMjMuMDMtLjUyLDI3LjU2LTE0LjYsMjguMjMtMTcuNDFsNi45OS00My4yOS0yMi4yLDE0Ljg4Yy0xLjEtMy4zNCwzLjM1LTE1Ljg0LTEzLjgtMjQuNjQiPjwvcGF0aD4KICA8cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik03ODYuOTgsNTQ5LjdjLTMuMTQsMC02LjE5LS4zNC05LjA3LTEuMDEtNy4wOS0xLjY2LTEzLjI0LTUuMjktMTcuODYtMTAuNTQtMTIuNDIsNy42Ny0yNS41OSwxMS41NS0zOS4xNSwxMS41NS0xNi43NCwwLTI5LjM1LTguNjEtMzMuMTctMTEuNTZsLS4zNS0uMTljLS4zOC0uMjYtMS4yMy0uODctMi4zMS0xLjktLjQxLS4zMi0uNzItLjU2LS43Ni0uNTlsLjA0LS4wNWMtLjI3LS4yNS0uNDMtLjQ0LS41MS0uNjEtNS43NC02LjI3LTE0LjgxLTIyLjI2LTIuNTQtNTQuMTEsOC41Ny0yMi4yMiwyMS41NS0zMy45NywzMC45My0zOS45MSwxMC4yMi02LjQ3LDE4LjMxLTcuNjQsMTguNjUtNy42OWwxMS4xNi0uNzRjMi4wNy0uMiwzLjc5LS4zLDUuMzktLjMsOC40OSwwLDE2LjQ1LDIuMzEsMjIuMzksNi41MSwzLjQxLDIuNDEsNy44NCw2LjcxLDEwLjE1LDEzLjc0LDIuMTgtMS4xNyw0LjUtMi4xNSw2LjkxLTIuOSwzLjEtLjk3LDYuNDktMS40MywxMC4wNS0xLjQsMS41Ni0yLjc1LDMuNDYtNS4yMyw1LjY2LTcuMzYsNi40Ni02LjI2LDI1Ljg4LTE0LjE3LDQzLjYyLTUuMDgsMTQuMjcsNy4zMiwxNC4yMSwxNy4yMywxNC4xOSwyMi41NSwwLC40MSwwLC44LDAsMS4xNmwyMi44LTE1LjI4LTcuMzksNDUuNzdjLS43MSwzLjAxLTUuMzUsMTcuNTUtMjguNywxOC4zMS0yLjc2LDQuMzItNi4yNSw5LjczLTcuODgsMTIuMDYtMTIuMjYsMTcuNDItMzMuNzYsMjkuNTktNTIuMjgsMjkuNTlNNzYwLjUsNTM1LjI5bC42MS43NGM0LjM3LDUuMjcsMTAuMzYsOC45MSwxNy4zLDEwLjU0LDIuNzEuNjQsNS42Ljk2LDguNTcuOTYsMTcuODYsMCwzOC42Mi0xMS43OCw1MC40OS0yOC42NiwxLjY3LTIuMzgsNS4zNS04LjA5LDguMTQtMTIuNDZsLjMxLS40OWguNThjMjIuMjQtLjUxLDI2LjU1LTEzLjksMjcuMTktMTYuNThsNi41Ny00MC43My0yMS4zMSwxNC4yOC0uNDUtMS4zN2MtLjI4LS44NS0uMjctMS45OC0uMjctMy40MS4wMy01LjIuMDctMTMuODktMTMtMjAuNi0xNi43Ni04LjYtMzUuMDQtMS4xOC00MS4xMSw0LjctMi4xOSwyLjEzLTQuMDcsNC42Mi01LjU4LDcuNDFsLS4zMi41OS0uNjctLjAyYy0zLjU4LS4wOS02Ljk0LjMzLTEwLDEuMjgtMi43Ljg1LTUuMjgsMS45OS03LjY2LDMuMzhsLTEuMjIuNzItLjM4LTEuMzdjLTItNy4yLTYuMzgtMTEuNTEtOS43MS0xMy44Ni01LjU4LTMuOTQtMTMuMDktNi4xMS0yMS4xNC02LjExLTEuNTMsMC0zLjE5LjA5LTUuMjEuMjlsLTExLjEyLjc0Yy0uMjQuMDQtMzEuODQsNC44OC00Ny43Nyw0Ni4yMS0xMi42OSwzMi45MS0yLjAyLDQ3Ljk2LDMuMDksNTIuODguMTguMTQuMzguMjkuNTkuNDYuMzYuMjguNzMuNTcsMS4wMy44MWwxLjU2LDEuMjJjNC4yNCwzLjE2LDE1Ljk2LDEwLjY4LDMxLjI3LDEwLjY4LDEzLjQ0LDAsMjYuNDktMy45NCwzOC43OS0xMS43MWwuODEtLjUxWiI+PC9wYXRoPgogIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTg1OC4xOSw0NzUuMDFjLTEuMzgsMS40Ni02LjIyLDUuNy0xMC4yNiw1LjkxbC0uMjIuMDJjLS43MS4wOC0xLjMyLjEzLTEuODMuMTQuNDgtMS4zOS45OS0yLjk1LDEuMzMtNC4xNywyLjgzLTEwLjIxLDEuOTktMTguOS0yLjM2LTI0LjQ5LTMuNjItNC42NC05LjQtNy4xMS0xNy4xOC03LjMzLTYuMTQtLjE2LTExLjE3LDEuNTctMTQuOSw1LjE4LTQuMDksMy45Ny01LjY0LDkuMzQtNi4yMiwxMy4xOS00LjA4LTEuMzMtMTAuMTMtMi42My0xNS4yLTEuMDUtMTIuMjEsMy44My0xOC41OSwxNi42Mi0yMi4zNSwyOC42NC00Ljk4LDcuNzktMTEuMTksMTQuNS0xOC41MywxOS45OC04LjQ5LDYuMzMtMTYuODQsOS41NC0yNC44MSw5LjU0LTUuNTYsMC05LjEtMS4yNS0xMC41My0zLjctMS43OS0zLjA3LTIuNy02LjE1LTIuNy05LjE2LDAtLjY1LjAyLTEuMjcuMDYtMS44NSw4LjItMS4xNiwxNi4zMy0zLjUsMjQuMjEtNi45Nyw4LjgzLTMuOSwxNi4xNS05LjAxLDIxLjc3LTE1LjE4LDUuODYtNi40NCw4LjgzLTEzLjQ1LDguODMtMjAuODQsMC02LjAzLTEuOTktMTAuNDktNS45Mi0xMy4yNi0zLjYxLTIuNTUtOC4wNy0zLjg0LTEzLjI2LTMuODQtOS4yMSwwLTE4LjYyLDMuMzgtMjcuOTYsMTAuMDUtOS4xMiw2LjUxLTE2LjcsMTQuNjktMjIuNTIsMjQuMzMtNC4zNiw3LjIyLTcuMTIsMTQuMTgtOC4yNywyMC43Ny0uMDQuMDUtLjA4LjEtLjEyLjE0LS4yMiwyLjc5LS4zOCw1LjYxLS4zOSw4LjEzLS4wMiwzLjI4LjYzLDYuMTQsMS40OSw4LjQ5LjAzLS4wMy4wNi0uMDYuMDgtLjA5LDEuNDEsMy45NCwzLjcsNy40NCw2LjkyLDEwLjQzLDUuNjgsNS4yNywxMy42LDcuOTUsMjMuNTQsNy45NSwxMi4yLDAsMjQuMTEtNC4wNCwzNS40LTEyLDMuMjctMi4zMSw2LjMxLTQuODgsOS4xNS03LjYzLDEuMzQsOS45Myw2Ljg3LDE2LjkyLDE1Ljg1LDE5LjAyLDEuOC40MiwzLjcuNjIsNS42OC42MiwxMy42MSwwLDMwLjYzLTkuNjEsNDAuNDMtMjMuNTUsMi4zMS0zLjI5LDkuMTEtMTMuOTksMTIuMDEtMTguNTcsMS40NC4yNywzLjM4LjUxLDUuOC41MSwxNC4wMywwLDE2LjMzLTYuMTgsMTYuNjgtNy42NWw1LjEyLTIxLjEtOC44Myw5LjRaTTcyMy45Miw0ODAuMDJjMy45Ni01LjQ5LDguMzUtMTAuMiwxMy4wNC0xMy43Nyw0LjMzLTMuMyw4LjIzLTUuMDMsMTEuNi01LjAzLjA5LDAsLjE3LS4wMi4yNC0uMDIuMDIuMTcuMDMuMzcuMDMuNjUsMCw0LjAxLTEuOTgsOC42OS01Ljg5LDEzLjA5LTQuMTgsNC43MS05LjM2LDguMDgtMTUuMzgsMTIuNGgwYy0zLjYzLDEuMDgtNy4wNiwyLjk5LTEwLjI0LDMuOTUsMS43NC0zLjY4LDMuOTUtNy41OSw2LjYxLTExLjI3TTc5MS40OCw1MTcuMThjLTEuMjgtLjUyLTIuMTctMS41Mi0yLjcyLTMuMDYtMS43MS00Ljc3LjI3LTEzLjU4LDQuODItMjEuNDMsNC4yNS03LjM0LDEwLjQ4LTEzLjc0LDE0LjQ0LTE3LjQxLDEuMjcsMi4zNCwzLjQzLDUuMTIsNy4xMSw3Ljg0LDMuOSwyLjg3LDcuMTYsNC42NSw5LjUyLDUuNzMtNi45NSwxMS4yNi0yMi43NywzMi41Ni0zMy4xNywyOC4zM004MzEuMTIsNDc1Ljc3Yy0xLjU0LS45MS0zLjU0LTIuNDItNS4zNi00LjgxLTIuMDYtMi42OS0yLjk3LTUuODYtMi4zMy04LjA4LjM0LTEuMTgsMS4wOS0yLDIuMy0yLjQ5LjY4LS4yOCwxLjM1LS40MSwxLjk5LS40MS43OCwwLDEuNTIuMiwyLjE5LjYxLDEuNzMsMS4wNCwyLjg0LDMuMjMsMi45OCw1Ljg4LjIsMy44My0uODEsNy4wNy0xLjc3LDkuMzEiPjwvcGF0aD4KICA8cGF0aCBjbGFzcz0iY2xzLTUiIGQ9Ik02NzcuMzcsNTE5LjQ0Yy0uMzQtMi4yNi0uNTYtNC4zMi0uNzEtNi4xMS01Ljg0LDQuMTgtMTEuNTIsNi4zMS0xNi45Myw2LjMxLTIuOTQsMC00Ljk1LS43My02LjE2LTIuMjQtLjk2LTEuMi0yLjExLTMuOTEtMi4xMS0xMC4wMSwwLTkuODUsMy40LTIyLjcyLDEwLjEtMzguMywxMS41Ny0uMSwyNi45NC0xLjE2LDI2Ljk0LTEuMTYsMCwwLC40LTEuMDYsNC41OS03LjIzLDMuNzEtNC44Myw1Ljk0LTcuMzksNS45NC03LjM5LDAsMC0xNi4yNCwxLjMtMzAuMDQsMS40LDMuMjUtNS44OCw3LjI0LTEyLjgyLDEyLjE1LTIwLjcyLDQuNTktNy41NCw3LjktMTMuMjksOS45Ni0xNy4wOSwyLjI5LTQuMjMsMy4zOC03LjYzLDMuMzgtMTAuMzhzLTEuMDItNC45OS0yLjkyLTYuNzFjLTEuODUtMS42Ni00LjEyLTIuNTQtNi41NS0yLjU0LTUuOTksMC0xMi42NCw1LjgtMjAuOTEsMTguMjUtNy4xMywxMC43My0xMy45MiwyMy42My0yMC4xOSwzOC4zOS0yLjU2LS4yMy01LjA5LS41LTcuNjgtLjgxbC0zLjc2LS40NnYxMi4yMWwxLjk2Ljg2YzEsLjQzLDIuNDEuODUsNC4zOSwxLjMtMi40Nyw2LjY4LTQuNTgsMTMuMTMtNi4zMiwxOS4yOS0yLjc3LDUuODEtNi4yOCwxMS4xLTEwLjU0LDE1LjY4LTUuMDIsNS40MS0xMC40OCw5LjYzLTE2LjIyLDEyLjUzLTUuNjEsMi44NC0xMSw0LjI5LTE2LjAyLDQuMjktNC42LDAtNy43OC0xLjA5LTkuNDYtMy4yNS0xLjkzLTIuNDgtMi44Ny01LjU1LTIuODctOS4zOSwwLTUuNzIsMS43Ni0xMi4yNCw1LjIyLTE5LjQsMy41MS03LjI1LDcuOTEtMTMuNTEsMTMuMDktMTguNiw0Ljc3LTQuNjksOS4xLTcuMDcsMTIuODUtNy4wNy40LDAsLjY1LjA0Ljc5LjA3LDAsLjA3LjAyLjE2LjAyLjI4LDAsMy4yOC0uNjIsNi4xNS0xLjg2LDguNTEtMS4xOSwyLjI3LTIuNDcsMy44OS0zLjcyLDQuNjdsLTIuNzcsMS43NiwxLjc3LDIuNjljMy4wMiw0LjU4LDYuOTcsNS41NCw5Ljc0LDUuNTQsMy4wMywwLDcuMzYtMS4yMiwxMC44Mi03LjA1LDIuNDMtNC4wOSwzLjY2LTguNTgsMy42Ni0xMy4zNywwLTUuMDktMS43OC05LjQyLTUuMjktMTIuODctMy41My0zLjQ2LTguNzktNS4yMi0xNS42Mi01LjIyLTguNTMsMC0xNy4wMywyLjkyLTI1LjI3LDguNjgtOC4wNyw1LjY0LTE0LjcsMTMuMDctMTkuNzIsMjIuMDgtMy42Niw2LjU3LTUuOTksMTMuMzQtNy4wMSwyMC4yLTQuMTUsNS4zMi04Ljk1LDEwLjAyLTE0LjM2LDE0LjA2LTguNDksNi4zMy0xNi44NCw5LjU0LTI0LjgxLDkuNTQtNS41NiwwLTkuMS0xLjI1LTEwLjUzLTMuNy0xLjc5LTMuMDctMi43LTYuMTUtMi43LTkuMTYsMC0uNjUuMDItMS4yNy4wNi0xLjg1LDguMi0xLjE1LDE2LjMzLTMuNSwyNC4yMS02Ljk3LDguODMtMy45LDE2LjE1LTkuMDEsMjEuNzctMTUuMTgsNS44Ni02LjQ0LDguODMtMTMuNDUsOC44My0yMC44NCwwLTYuMDMtMS45OS0xMC40OS01LjkyLTEzLjI2LTMuNjEtMi41NS04LjA3LTMuODQtMTMuMjYtMy44NC05LjIxLDAtMTguNjIsMy4zOC0yNy45NiwxMC4wNS03LjY1LDUuNDYtMTQuMTksMTIuMTEtMTkuNTQsMTkuNzlsLTEuNzQsMi42MWMtLjQxLjY0LS44NCwxLjI4LTEuMjQsMS45My0zLjQ1LDUuNzItNS44OCwxMS4yNi03LjMyLDE2LjYtMi4xOCw0LjA1LTQuNDYsNy44My02LjgzLDExLjMtNC43MSw2Ljg5LTkuMTksMTAuNjgtMTIuNiwxMC42OC0uMiwwLS40OSwwLS45OS0uNjEtLjI0LS4yOS0uOC0xLjI2LS44LTMuODgsMC0zLjQsMS4xOC04LjczLDMuNDktMTUuNzgsMS42Mi00LjU1LDIuODYtOC43MiwzLjY3LTEyLjM5Ljg0LTMuNzcsMS4yNi03Ljc3LDEuMjYtMTEuODksMC03LjM0LTEuNzctMTMuOC01LjI2LTE5LjItMy43Ni01LjgxLTkuNC04Ljg5LTE2LjI5LTguODktNy42OCwwLTE1LjQ0LDMuNzQtMjMuMDUsMTEuMTItMy42MywzLjUyLTcuMjIsNy41OC0xMC43MywxMi4xNSwxLjA0LTUuMTMsMS43NS05LjQxLDEuNzUtMTIsMC0zLjI4LS45My01Ljk3LTIuNzgtOC4wMi0xLjM1LTEuNDgtMy44Ny0zLjI1LTguMTgtMy4yNS0yLjY4LDAtNS40MS44NS04LjExLDIuNTItMi41MywxLjU3LTQuNDIsMy4zNS01LjgyLDUuMywwLDAtNC41MSwyNy40LTYuNSwzNC4zMy0yLDYuOTMtNy4xOSwxNC4wMi0xMS4xNCwxOS44MS00LjcxLDYuODktOS4yMSwxMC42OC0xMi42MywxMC42OC0uMiwwLS41MSwwLTEtLjYxLS4yNC0uMjktLjgtMS4yNi0uOC0zLjg4LDAtMy40LDEuMTgtOC43MywzLjQ5LTE1Ljc4LDEuNjItNC41NSwyLjg1LTguNzIsMy42Ny0xMi4zOS44NC0zLjc3LDEuMjYtNy43NywxLjI2LTExLjg5LDAtNy4zNC0xLjc3LTEzLjgtNS4yNi0xOS4yLTMuNzYtNS44MS05LjQtOC44OS0xNi4yOS04Ljg5LTcuNjgsMC0xNS40NCwzLjc0LTIzLjA1LDExLjEyLTMuNjMsMy41Mi03LjIyLDcuNTgtMTAuNzMsMTIuMTUsMS4wNC01LjEzLDEuNzUtOS40MSwxLjc1LTEyLDAtMy4yOC0uOTMtNS45Ny0yLjc4LTguMDItMS4zNS0xLjQ4LTMuODctMy4yNS04LjE4LTMuMjUtMi42OCwwLTUuNDEuODUtOC4xMSwyLjUyLTIuNTMsMS41Ny03LjQsNi4xMy03LjQsNi4xMywwLDAtLjgyLDE0LjQ0LTMuMTgsMjQuNDQsMCwwLTEuNjMsMS4xMS0zLjE3LDEuNjMtMS42NC41Ni0zLjI1LjE2LTMuMjUuMTYuNDgtMS4zOSwxLjAyLTIuOTUsMS4zNi00LjE3LDIuODMtMTAuMjEsMi0xOC45MS0yLjM1LTI0LjQ5LTMuNjItNC42NC05LjM5LTcuMTEtMTcuMTctNy4zMy02LjE0LS4xNi0xMS4xNiwxLjU3LTE0Ljg5LDUuMTgtNC4wOSwzLjk3LTUuNjQsOS4zNC02LjIyLDEzLjE5LTQuMDktMS4zMy0xMC4xMy0yLjY0LTE1LjItMS4wNS0xNC40OCw0LjU1LTIwLjc4LDIxLjY5LTI0LjIxLDM1LjIxLTEuMTYsMS41Mi0yLjM5LDIuOTgtMy42OSw0LjM3LTUuMDIsNS40MS0xMC40OCw5LjYzLTE2LjIyLDEyLjUzLTUuNjEsMi44NC0xMSw0LjI5LTE2LjAyLDQuMjktNC42LDAtNy43OC0xLjA5LTkuNDYtMy4yNS0xLjkzLTIuNDgtMi44Ny01LjU1LTIuODctOS4zOSwwLTUuNzIsMS43Ni0xMi4yNCw1LjIyLTE5LjQsMy41MS03LjI1LDcuOTEtMTMuNTEsMTMuMDktMTguNiw0Ljc3LTQuNjksOS4xLTcuMDcsMTIuODUtNy4wNy40LDAsLjY1LjA0Ljc5LjA3LDAsLjA3LjAyLjE2LjAyLjI4LDAsMy4yOC0uNjIsNi4xNS0xLjg2LDguNTEtMS4xOSwyLjI3LTIuNDcsMy44OC0zLjcyLDQuNjhsLTIuNzcsMS43NiwxLjc3LDIuNjljMy4wMiw0LjU4LDYuOTcsNS41NCw5Ljc0LDUuNTQsMy4wMiwwLDcuMzYtMS4yMiwxMC44Mi03LjA1LDIuNDMtNC4wOSwzLjY2LTguNTgsMy42Ni0xMy4zNywwLTUuMDktMS43OC05LjQyLTUuMjktMTIuODctMy41My0zLjQ2LTguNzktNS4yMi0xNS42Mi01LjIyLTguNTMsMC0xNy4wMywyLjkyLTI1LjI3LDguNjgtOC4wNiw1LjY0LTE0LjcsMTMuMDctMTkuNzIsMjIuMDgtNS4wNCw5LjA1LTYuOSwxOC40OC02LjksMjguMDIsMCwxMC4wMSwzLjQ3LDE3LjgsOC44NiwyMy4xNGgwYzYuNDgsNS4zNywxMi4wMSw4LjA5LDIwLjksOC4wOSw3LjkxLDAsMTUuNjktMi4wOSwyMy44NC02LjIsNS45OC0zLjAzLDExLjQzLTYuOTQsMTYuNjEtMTEuNjUsMS43Nyw4LjksNy4wOCwxNS4xMSwxNS40NSwxNy4wNywxLjguNDIsMy42Ni42Miw1LjY0LjYyLDEzLjYxLDAsMzAuNjEtOS42MSw0MC40MS0yMy41NSwyLjMxLTMuMjksOS4xLTEzLjk5LDEyLTE4LjU3LDEuNDQuMjcsMy4zOC41MSw1LjguNTEsMS4yOSwwLDIuNDUtLjA3LDMuNTQtLjE2LTEuOTQsNi43OS00LjIxLDE0LjE0LTYuODIsMjEuOTRsLTIuMzMsOC4wMS43MywxLjI2YzMuNzYsNi4xMiw5LjYzLDkuNDIsMTYuOTgsOS40MmgyLjE2bC45Mi0xLjk0YzguODItMTcuOTUsMTcuMTktMzMsMjQuODYtNDQuNjksNy4wOC0xMC43NywxMy44OS0xNi4yNSwyMC4yNC0xNi4yNSwxLjE0LDAsMS45Ni4zOSwyLjc2LDEuMzMuNjQuNzUsMS40LDIuMzcsMS40LDUuODIsMCwzLjY1LS45OSw5LjUtMi45NCwxNy40NC0uNzMsMy4wNS0xLjQyLDYuMS0yLjA3LDkuMTUtLjY5LDMuMjMtMS4wNCw2LjE1LTEuMDQsOC42NiwwLDYuMywxLjgsMTEuNSw1LjM1LDE1LjQ3LDMuNjksNC4xMiw4Ljg1LDYuMjEsMTUuMzMsNi4yMSw3LjE5LDAsMTMuNzQtMi44OSwxOS41Ni04LjY2LDMuNzUsNC44NCw5LjA5LDcuNDYsMTUuNjEsNy40NmgyLjE2bC45Mi0xLjk0YzguODItMTcuOTUsMTcuMTktMzMsMjQuODYtNDQuNjksNy4wOC0xMC43NywxMy44OC0xNi4yNSwyMC4yMy0xNi4yNSwxLjE0LDAsMS45Ni4zOSwyLjc2LDEuMzMuNjQuNzUsMS40LDIuMzcsMS40LDUuODIsMCwzLjY1LS45OSw5LjUtMi45NCwxNy40NC0uNzMsMy4wNS0xLjQyLDYuMS0yLjA3LDkuMTUtLjY5LDMuMjMtMS4wNCw2LjE1LTEuMDQsOC42NiwwLDYuMywxLjgsMTEuNSw1LjM1LDE1LjQ3LDMuNjksNC4xMiw4Ljg1LDYuMjEsMTUuMzMsNi4yMSw5LjIsMCwxNy4zNy00Ljc4LDI0LjI4LTE0LjIuMzItLjQ0LjY0LS45Mi45Ni0xLjM4LDEuNDEsMi44NCwzLjMxLDUuNDIsNS43Niw3LjcsNS42OCw1LjI3LDEzLjYsNy45NSwyMy41NCw3Ljk1LDEyLjIsMCwyNC4xMi00LjA0LDM1LjQtMTIsMy4zNi0yLjM3LDYuNzktNS4wMiw5LjctNy44NiwxLjMzLDQuNzQsMy43OSw4LjcxLDcuMDIsMTEuODNoMGM1LjQsNS4zNywxMi40LDguMDksMjEuMjksOC4wOSw3LjkxLDAsMTUuODktMi4wOSwyNC4wMy02LjIsNy41MS0zLjgsMTQuMzYtOSwyMC41Ny0xNS40My40Niw2LjY5LDIuNiwxMS45OCw2LjQ1LDE1Ljc0LDQuMzksNC4yOCwxMC40Miw2LjQ1LDE3Ljk2LDYuNDUsOS4zNCwwLDE4LjQ0LTMuMjEsMjcuMTMtOS41Mi0uOTQtMS44OS0xLjg4LTQuNDUtMi4zOC03LjcyTTUxMy4yLDQ4MC4xYzMuOTYtNS40OSw4LjM1LTEwLjE4LDEzLjA0LTEzLjc2LDQuMzMtMy4zLDguMjMtNS4wMiwxMS42LTUuMDIuMDksMCwuMTctLjAyLjI0LS4wMi4wMi4xNy4wMy4zNy4wMy42NiwwLDQtMS45OCw4LjYzLTUuODksMTMuMDMtNC4xOCw0LjcxLTkuMzYsOC4wMy0xNS4zOSwxMi4zNGgwYy0zLjYzLDEuMDgtNy4wNiwzLjA0LTEwLjI0LDQsMS43NC0zLjY4LDMuOTUtNy41Nyw2LjYtMTEuMjRNMjIwLjY5LDUxNy4xOGMtMS4yOC0uNTItMi4xNy0xLjUyLTIuNzItMy4wNi0xLjcxLTQuNzYuMjctMTMuNTgsNC44Mi0yMS40Myw0LjI1LTcuMzQsMTAuNDgtMTMuNzQsMTQuNDQtMTcuNDEsMS4yNywyLjM0LDMuNDMsNS4xMiw3LjExLDcuODQsMy45LDIuODcsNy4xNiw0LjY1LDkuNTIsNS43My02Ljk1LDExLjI2LTIyLjc3LDMyLjU2LTMzLjE3LDI4LjMzTTI2MC4zMyw0NzUuNzdjLTEuNTQtLjkxLTMuNTQtMi40Mi01LjM2LTQuODEtMi4wNi0yLjY5LTIuOTctNS44Ni0yLjMzLTguMDguMzQtMS4xOCwxLjA5LTIsMi4zLTIuNDkuNjgtLjI4LDEuMzUtLjQxLDEuOTktLjQxLjc4LDAsMS41Mi4yLDIuMTkuNjEsMS43MywxLjA0LDIuODQsMy4yMywyLjk4LDUuODguMiwzLjgzLS44MSw3LjA3LTEuNzcsOS4zMSI+PC9wYXRoPgo8L3N2Zz4K');
+  background-repeat:no-repeat;
+  background-size:203px 203px;
+  background-position:-20px -79px;
+  flex-shrink:0;
+  cursor:default;
+}
+.navbar .title{font-size:17px;font-weight:900;color:var(--sapphire);letter-spacing:-.3px}
+.navbar .title span{color:var(--primary)}
+.navbar .spacer{flex:1}
+.navbar .offline-badge{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:50px;background:rgba(0,175,169,.08);color:var(--primary);font-weight:700;font-size:13px}
+
+/* HERO */
+.hero{position:relative;z-index:1;max-width:1500px;margin:0 auto;padding:40px 28px 24px}
+.hero .badge{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,rgba(0,175,169,.15),rgba(13,71,161,.1));border:1px solid rgba(0,175,169,.3);padding:8px 20px;border-radius:50px;font-size:12px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:var(--primary);margin-bottom:20px}
+.hero h1{font-size:clamp(28px,3.5vw,42px);font-weight:900;color:var(--sapphire);line-height:1.1;letter-spacing:-1px;margin-bottom:10px}
+.hero h1 .accent{background:linear-gradient(135deg,var(--primary),var(--sapphire));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p.lead{font-size:16px;color:var(--text-medium);line-height:1.6;max-width:700px}
+
+/* SECTIONS */
+.section{position:relative;z-index:1;max-width:1500px;margin:0 auto;padding:0 28px 24px}
+.panel{background:rgba(255,255,255,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.7);border-radius:20px;padding:28px 32px;box-shadow:0 10px 40px rgba(0,0,0,.06);margin-bottom:20px}
+.panel h2{font-size:18px;font-weight:900;color:var(--sapphire);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.panel h2 i{color:var(--accent);font-size:16px}
+
+/* GRID INFO */
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:11px;font-weight:800;color:var(--text-light);text-transform:uppercase;letter-spacing:1.2px}
+.field input,.field select{padding:11px 14px;border:2px solid #e0e0e0;border-radius:10px;font-family:inherit;font-size:14px;transition:.2s;background:#fff}
+.field input:focus,.field select:focus{outline:none;border-color:var(--primary);background:#f0fbfb}
+
+/* KPI CARDS */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:20px}
+.kpi{background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(255,255,255,.8));border:1px solid rgba(255,255,255,.7);border-radius:18px;padding:24px;box-shadow:0 8px 30px rgba(0,0,0,.06);position:relative;overflow:hidden;transition:transform .3s}
+.kpi::before{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(0,175,169,.1),transparent 70%)}
+.kpi:hover{transform:translateY(-4px)}
+.kpi .kpi-label{font-size:11px;font-weight:800;color:var(--text-light);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px}
+.kpi .kpi-value{font-size:36px;font-weight:900;color:var(--sapphire);line-height:1}
+.kpi .kpi-sub{font-size:12px;color:var(--text-light);margin-top:8px}
+.kpi.avancement{border-top:4px solid var(--primary)}
+.kpi.actif{border-top:4px solid var(--accent)}
+.kpi.annulation{border-top:4px solid var(--danger)}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,.06);background:#fff}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:1300px}
+thead{background:linear-gradient(135deg,var(--sapphire),var(--primary));color:#fff;position:sticky;top:0;z-index:2}
+th{padding:12px 10px;text-align:left;font-weight:700;font-size:11px;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}
+td{padding:6px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafafa}
+
+td input,td select{width:100%;padding:8px 10px;border:1px solid #e5e5e5;border-radius:8px;font-family:inherit;font-size:13px;background:#fff;transition:.15s}
+td input:focus,td select:focus{outline:none;border-color:var(--primary);background:#f0fbfb;box-shadow:0 0 0 2px rgba(0,175,169,.1)}
+
+td.computed{background:#fafafa;color:var(--text-medium);font-weight:600;text-align:center;font-size:12px}
+td.computed.statut-0{color:var(--danger)}
+td.computed.statut-1{color:var(--text-light)}
+td.computed.statut-2{color:var(--accent)}
+td.computed.statut-3{color:var(--success)}
+
+.row-del{background:transparent;border:none;color:var(--danger);cursor:pointer;font-size:14px;padding:6px;border-radius:8px;transition:.2s}
+.row-del:hover{background:rgba(198,40,40,.1)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border:none;border-radius:50px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:.25s}
+.btn:hover{filter:brightness(1.08);transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.15)}
+.btn:active{transform:translateY(0)}
+.btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff}
+.btn.accent{background:linear-gradient(135deg,var(--accent),#ff8f00);color:#fff}
+.btn.ghost{background:rgba(255,255,255,.7);color:var(--text-dark);border:1px solid rgba(0,0,0,.08)}
+.btn.ghost:hover{background:#fff}
+.btn.danger{background:linear-gradient(135deg,var(--danger),#8b0000);color:#fff}
+.btn.secondary{background:linear-gradient(135deg,var(--sapphire),#1565c0);color:#fff}
+
+.actions-bar{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end;margin-top:16px}
+.actions-bar .btn{min-width:auto}
+
+/* TOAST */
+.toast{position:fixed;bottom:30px;right:30px;background:var(--sapphire);color:#fff;padding:16px 24px;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.2);display:flex;align-items:center;gap:12px;font-weight:600;transform:translateY(120px);opacity:0;transition:.4s cubic-bezier(.2,.8,.2,1);z-index:1000;max-width:380px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast i{color:var(--accent);font-size:18px}
+.toast.success{background:linear-gradient(135deg,var(--success),#00afa9)}
+.toast.error{background:linear-gradient(135deg,var(--danger),#8b0000)}
+
+/* FOOTER */
+.footer{position:relative;z-index:1;text-align:center;padding:30px 28px 50px;color:var(--text-light);font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:700}
+.footer .tagline{color:var(--primary);margin-bottom:8px}
+
+@media(max-width:768px){
+  .navbar-inner,.hero,.section,.footer{padding-left:16px;padding-right:16px}
+  .panel{padding:20px 18px}
+  .kpi .kpi-value{font-size:28px}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-decor"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
+
+<nav class="navbar">
+  <div class="navbar-inner">
+    <div class="logo" aria-label="Connecteo"></div>
+    <span class="title">Fiche de <span>Cadrage</span></span>
+    <span class="spacer"></span>
+    <span class="offline-badge"><i class="fas fa-hard-drive"></i> Outil hors ligne</span>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="badge"><i class="fas fa-clipboard-check"></i> Checklist Formation</div>
+  <h1>Fiche de <span class="accent">cadrage</span> projet</h1>
+  <p class="lead">Renseignez les informations de la prestation. Les taux d'avancement, de réalisation et d'annulation sont calculés automatiquement. Exportez en Excel avec la mise en forme Connecteo.</p>
+</header>
+<!-- PANNEAU PROJETS -->
+<div class="section">
+  <div class="panel">
+    <h2><i class="fas fa-folder-open"></i> Projet en cours</h2>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <select id="project-select" onchange="switchProject(this.value)" style="flex:1;min-width:280px;padding:11px 14px;border:2px solid #e0e0e0;border-radius:10px;font-family:inherit;font-size:14px">
+        <option value="">— Aucun projet —</option>
+      </select>
+      <button class="btn primary" onclick="newProject()"><i class="fas fa-plus"></i> Nouveau</button>
+      <button class="btn ghost" onclick="renameProject()"><i class="fas fa-pen"></i> Renommer</button>
+      <button class="btn danger" onclick="deleteProject()"><i class="fas fa-trash"></i> Supprimer</button>
+    </div>
+    <div id="project-info" style="margin-top:12px;font-size:13px;color:var(--text-light)"></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="panel">
+    <h2><i class="fas fa-info-circle"></i> Synthèse de la prestation</h2>
+    <div class="info-grid">
+      <div class="field"><label>Client</label><input type="text" id="client" placeholder="Ex. PAMF"></div>
+      <div class="field"><label>Projet</label><input type="text" id="projet" placeholder="Ex. Consulting"></div>
+      <div class="field"><label>Type de prestation 1</label><input type="text" id="type1" placeholder="Ex. Formation - GRC - Recouvrement"></div>
+      <div class="field"><label>Type de prestation 2</label><input type="text" id="type2" placeholder="Ex. Accompagnement et Repiquage"></div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="kpi-grid">
+    <div class="kpi avancement">
+      <div class="kpi-label">Taux d'avancement global</div>
+      <div class="kpi-value" id="kpi-avancement">—</div>
+      <div class="kpi-sub">Moyenne des actions non annulées</div>
+    </div>
+    <div class="kpi actif">
+      <div class="kpi-label">Taux de réalisation actif</div>
+      <div class="kpi-value" id="kpi-actif">—</div>
+      <div class="kpi-sub">Actions en cours ou clôturées</div>
+    </div>
+    <div class="kpi annulation">
+      <div class="kpi-label">Actions annulées</div>
+      <div class="kpi-value" id="kpi-annulation">0</div>
+      <div class="kpi-sub">Statut « Annulé »</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="panel">
+    <h2><i class="fas fa-list-check"></i> Liste des actions</h2>
+    <div class="table-wrap">
+      <table id="actions-table">
+        <thead>
+          <tr>
+            <th style="min-width:240px">Action</th>
+            <th style="min-width:160px">Livrable</th>
+            <th style="min-width:110px">Statut</th>
+            <th style="min-width:100px">Libellé</th>
+            <th style="min-width:80px">% Réal.</th>
+            <th style="min-width:90px">Délai est.</th>
+            <th style="min-width:90px">Délai réel</th>
+            <th style="min-width:130px">Début</th>
+            <th style="min-width:130px">Fin prévue</th>
+            <th style="min-width:130px">Fin réelle</th>
+            <th style="min-width:140px">Support</th>
+            <th style="min-width:180px">Commentaire</th>
+            <th style="width:40px"></th>
+          </tr>
+        </thead>
+        <tbody id="actions-body"></tbody>
+      </table>
+    </div>
+    <div class="actions-bar">
+      <button class="btn ghost" onclick="addRow()"><i class="fas fa-plus"></i> Ajouter une action</button>
+      <button class="btn primary" onclick="saveLocal()"><i class="fas fa-save"></i> Sauvegarder</button>
+      <button class="btn accent" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Exporter Excel</button>
+      <button class="btn secondary" onclick="loadFromXlsx()"><i class="fas fa-upload"></i> Importer un Excel</button>
+      <input type="file" id="file-import" accept=".xlsx" style="display:none">
+      <button class="btn danger" onclick="resetAll()"><i class="fas fa-trash"></i> Réinitialiser</button>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="tagline">Chaque expérience est unique</div>
+  Connecteo 2026 · Fiche de cadrage
+</footer>
+
+<div class="toast" id="toast">
+  <i class="fas fa-check-circle"></i>
+  <span id="toast-msg">Message</span>
+</div>
+
+<script>
+/* =========================================================
+   CONFIGURATION
+   ========================================================= */
+const STORAGE_KEY = 'connecteo_cadrage_v1';
+const LOGO_SVG_B64 = "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiBpZD0iQ2FscXVlXzEiIGRhdGEtbmFtZT0iQ2FscXVlIDEiIHZpZXdCb3g9IjAgMCAxMDAwIDEwMDAiPgogIDxkZWZzPgogICAgPHN0eWxlPgogICAgICAuY2xzLTEge2ZpbGw6ICNmZmY7fQogICAgICAuY2xzLTIge2ZpbGw6IG5vbmU7fQogICAgICAuY2xzLTMge2ZpbGw6ICM4Nzg1ODc7fQogICAgICAuY2xzLTQge2ZpbGw6ICNjY2UxZTE7fQogICAgICAuY2xzLTUge2ZpbGw6ICMwMGFlYTk7fQogICAgICAuY2xzLTYge2NsaXAtcGF0aDogdXJsKCNjbGlwcGF0aCk7fQogICAgPC9zdHlsZT4KICAgIDxjbGlwUGF0aCBpZD0iY2xpcHBhdGgiPjxwb2x5bGluZSBjbGFzcz0iY2xzLTIiIHBvaW50cz0iMTE4LjI1IDU1NS4zNCA4ODguOTggNTU1LjM0IDg4OC45OCAzOTAuMzUgMTE4LjI1IDM5MC4zNSAxMTguMjUgNTU1LjM0Ij48L3BvbHlsaW5lPjwvY2xpcFBhdGg+CiAgPC9kZWZzPgogIDxnIGNsYXNzPSJjbHMtNiI+PHBhdGggY2xhc3M9ImNscy00IiBkPSJNMzI4LjI2LDUwOS4yN2MuMDQtLjA2LjA3LS4xMi4xMS0uMTgtLjA0LjE3LS4wNy4xNy0uMTEuMThNNDMwLjQsNTA5LjI3Yy4wNC0uMDYuMDctLjEyLjExLS4xOC0uMDQuMTctLjA3LjE3LS4xMS4xOE0xNjguNTIsNTExLjg1YzAtMy44MSwxLjM5LTguNjgsNC0xNC4wOC4yNy0uNTYuNTUtMS4xMi44NC0xLjY3LDMuNjgsMy41Myw4LjI1LDUuOCwxMy4yNiw2LjU2LTIuOTUsMi42Ny02LjAxLDQuODItOS4xNCw2LjQtMy4yNiwxLjY1LTYuMzMsMi42MS04Ljk2LDIuNzhNNTk3LjgyLDUxMS44NWMwLTMuODEsMS4zOS04LjY4LDQuMDEtMTQuMDguMjctLjU2LjU1LTEuMTIuODMtMS42NywzLjY3LDMuNTIsOC4yMyw1Ljc4LDEzLjIyLDYuNTYtMi45NiwyLjY4LTYuMDEsNC44My05LjEzLDYuNDEtMy4zLDEuNjgtNi4zLDIuNjEtOC45MywyLjc4TTY3MS45NSw1MTEuMzNjLjI2LTQuOTEsMS42My0xMi42Miw1Ljk4LTI0LjEyLDMuNjktLjEzLDcuNTgtLjMyLDExLjY0LS41Ny0yLjQsNC45Mi00LjE2LDkuNzgtNS4yOSwxNC41NS0xLjk3LDIuMjgtMy45OSw0LjI5LTYuMDQsNS45OS0yLjIsMS44Mi00LjMyLDMuMjMtNi4yOCw0LjE2TTY5Mi42NiwzOTAuMzVoLS44NGMtMTMuOTkuMjUtMjQuMjQsMTIuOTktMzEuNjMsMjQuMS02LjA5LDkuMTYtMTEuOTIsMTkuNzctMTcuMzksMzEuNjNsLTguMDItLjg3Yy00LjU3LTMuMTgtMTEuNDUtNi4wMy0yMS40My02LjAzLTExLjM5LDAtMjIuNTIsMy43NC0zMy4wNiwxMS4xMS0yLjE0LDEuNDktNC4xOCwzLjA5LTYuMTUsNC43OC0yLjI1LTQuNjQtNS40OC03Ljc4LTguMzktOS44NC01LjkzLTQuMTgtMTMuMDMtNi4zMS0yMS4wOS02LjMxLTEyLjEyLDAtMjQuMTgsNC4yMi0zNS44NSwxMi41Ni04LjQ3LDYuMDQtMTUuODQsMTMuNDEtMjEuOTIsMjEuOS0uODYtNy4xLTMuMTYtMTMuNTYtNi44NS0xOS4yOC02LjIxLTkuNTktMTUuOTgtMTQuODctMjcuNTEtMTQuODctOC4zOSwwLTE2LjU1LDIuNzQtMjQuMzYsOC4xNi0uMTctLjItLjM0LS4zOS0uNTEtLjU5LTQuNDUtNC44OS0xMC44OS03LjU4LTE4LjEzLTcuNTgtNS4yNywwLTEwLjQxLDEuNTMtMTUuMjgsNC41NS0zLjg4LDIuNC03LjA5LDUuMzUtOS41NCw4Ljc1bC0xLjY5LDIuMzYtLjQ3LDIuODNjLS4yMSwxLjI3LS40NCwyLjY0LS42OSw0LjEtMS4wNi0yLjctMi4zOS01LjI4LTMuOTctNy43My02LjIxLTkuNTktMTUuOTgtMTQuODctMjcuNTEtMTQuODctOC4zOSwwLTE2LjU1LDIuNzQtMjQuMzYsOC4xNi0uMTctLjItLjM0LS4zOS0uNTEtLjU5LTQuNDUtNC44OS0xMC44OS03LjU4LTE4LjEzLTcuNTgtNS4yNywwLTEwLjQxLDEuNTMtMTUuMjgsNC41NS0xLjIxLjc1LTIuNTgsMS43Ny0zLjkxLDIuODUtNC43Ny00LjI0LTEyLjI1LTguMTUtMjMuNzEtOC40OC0uMzIsMC0uNjQtLjAxLS45NS0uMDEtOS40NSwwLTE3LjYxLDMuMDQtMjMuNzEsOC45NS0yLjI4LDIuMjItNC4yMiw0Ljc5LTUuNzgsNy42OC0uMzEsMC0uNjItLjAxLS45My0uMDEtMy4wOSwwLTYuMjkuMzYtOS40MywxLjM1LTIuNjUuODMtNS4wOSwxLjkyLTcuMzQsMy4yMS0xLjUxLTQuMTMtMy45My03Ljg4LTcuMjItMTEuMTEtNC4yLTQuMTEtMTEuOTYtOS4wMi0yNS4wNi05LjAyLTExLjM5LDAtMjIuNTEsMy43NC0zMy4wNiwxMS4xMS05LjY4LDYuNzctMTcuNjIsMTUuNjMtMjMuNTgsMjYuMzQtNi4wNywxMC45LTkuMTUsMjIuMzMtOS4xNSwzMy45NiwwLDEzLjQsNCwyNC4xNSwxMS44OSwzMS45NCw3LjkxLDcuOCwxOC42NiwxMS45MiwzMS4wOCwxMS45MiwxMC4wOCwwLDIwLjI5LTIuNTgsMzAuMzctNy42NywyLjAyLTEuMDMsNC4wMS0yLjEzLDUuOTYtMy4zMiw0LjM4LDQuODQsMTAuMTcsOC4yNCwxNy4wNSw5Ljg1LDIuNzkuNjYsNS43Ni45OSw4LjgyLjk5LDEzLjg0LDAsMjkuMzgtNi45Myw0MS4zMy0xNy44bC42NiwzLjYzYzYuMTYsMTAuMDMsMTQuMDcsMTUuMTYsMjUuOCwxNS4yMWgxMy4zMmw0LjQxLTkuMDRjNi44Ni0xMy45MywxMy4zLTI3LjA3LDE5LjIzLTM2Ljg3LDAsMCwwLC4wMSwwLC4wMi0uODcsNC4wNy0xLjMxLDcuNTMtMS4zMSwxMC44OSwwLDkuMjYsMi45NSwxNy4zLDguNTMsMjMuNTMsNi4yMiw2Ljk1LDE0Ljk5LDEwLjU1LDI1LjM2LDEwLjU1LDYuNzcsMCw4Ljk5LTEuNiwxNC44NS00Ljc3LDQuNzcsMi42MywxNC4xMSw1LjY1LDE5Ljk2LDUuNjloMTEuMTVsNC4zOS05LjA1YzYuODYtMTMuOTMsMTMuMy0yNy4wNywxOS4yMy0zNi44NywwLDAsMCwuMDEsMCwuMDItLjg3LDQuMDctMS4zMSw3LjUzLTEuMzEsMTAuODksMCw5LjI2LDIuOTUsMTcuMyw4LjUzLDIzLjUzLDYuMjIsNi45NSwxNC45OSwxMC41NSwyNS4zNiwxMC41NSw2LjgzLDAsMTUuOTEtMS44MSwyNC45LTguODksNy44Miw1LjkyLDE3Ljc3LDguOSwyOS42NSw4LjksMTQuMjYsMCwyOC4wMy00LjM2LDQwLjk4LTEyLjk0LjM0LjM2LjY4LjcxLDEuMDMsMS4wNSw3LjkxLDcuOCwxOC42NiwxMS45MiwzMS4wOCwxMS45MiwxMC4wOCwwLDIwLjI5LTIuNTgsMzAuMzctNy42NywzLTEuNTIsNS45Mi0zLjIyLDguNzUtNS4xMS44NiwxLjA4LDEuNzksMi4xMiwyLjc5LDMuMSw2Ljg3LDYuNjksMTYuMzUsMTAuMjMsMjcuNCwxMC4yMywxMi40NCwwLDI0LjM0LTQuMTQsMzUuNDYtMTIuMzJsLjEuMDljOC4yMiw3LjY0LDE5LjI0LDExLjUyLDMyLjc0LDExLjUyczI2Ljg5LTMuOTksMzkuMzctMTEuODhjNC40OCw1LjM5LDEwLjU5LDkuMTksMTcuODksMTAuOSwyLjc5LjY2LDUuNzYuOTksOC44Mi45OSwxOC4xOSwwLDM5LjMyLTExLjk4LDUxLjM4LTI5LjEzLDEuNjMtMi4zMiw1LjEzLTcuNzQsOC4xNy0xMi41MSwyMy4wMy0uNTIsMjcuNTYtMTQuNiwyOC4yMi0xNy40MWw2Ljk5LTQzLjI5LTIyLjIxLDE0Ljg4Yy0xLjEtMy4zNCwzLjM1LTE1Ljg0LTEzLjgtMjQuNjQtNS42MS0yLjg4LTExLjQtNC0xNi44OC00LTExLjI5LDAtMjEuMjQsNC43OC0yNS40OCw4Ljg5LTIuMjgsMi4yMi00LjIyLDQuOC01Ljc5LDcuNjgtLjM2LS4wMS0uNzItLjAyLTEuMDktLjAyLTMuMDQsMC02LjE5LjM4LTkuMjcsMS4zNS0yLjc5Ljg3LTUuNDEsMi4wMy03Ljg4LDMuNDgtMi4wMi03LjI4LTYuMzQtMTEuNzgtMTAuMTMtMTQuNDYtNS45My00LjE4LTEzLjU1LTYuMzEtMjEuNjItNi4zMS05Ljc2LDAtMTguNzQsMi43NC0yOS41Myw4LjE3di0yLjM5cy03LjExLjg2LTE0LjUyLDEuNTJjLTcuNDEuNjYtMTIuMDYsMS4wMS0xMi4wNiwxLjAxLjIyLS4zNi41OC0uNzIuOC0xLjA4LDQuODMtNy45NSw4LjI4LTEzLjcxLDEwLjQxLTE3LjYzLDMuMzQtNi4xNiw0LjkyLTExLjMxLDQuOTItMTYuMiwwLTYuMTUtMi40OS0xMS43OS03LjA1LTE1LjkyLTQuMTctMy43NS05LjUzLTUuODUtMTUuMTUtNS45NSIvPjwvZz4KICA8cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik04NTkuNTQsNDYxLjE2Yy0xLjEtMy4zNCwzLjM1LTE1Ljg0LTEzLjgtMjQuNjQtMTcuMTYtOC44LTM2LjA3LTEuMjItNDIuMzcsNC44OS0yLjI4LDIuMjItNC4yMiw0LjgtNS43OSw3LjY4LTMuMzctLjEtNi45MS4yNS0xMC4zNiwxLjMzLTIuNzkuODctNS40MSwyLjAzLTcuODgsMy40OC0yLjAyLTcuMjgtNi4zNC0xMS43OC0xMC4xMy0xNC40Ni01LjkzLTQuMTgtMTMuNzEtNi4zMS0yMS43OC02LjMxLTkuNzYsMC0xOS45OCwyLjc0LTI5LjY5LDguMTd2LTIuMzlzLTYuOTUuODYtMTQuMzYsMS41MmMtNy40MS42Ni0xMS45OCwxLjAxLTExLjk4LDEuMDEuMjItLjM2LjYyLS43Mi44NC0xLjA4LDQuODMtNy45NSw4LjMtMTMuNzEsMTAuNDMtMTcuNjMsMy4zNC02LjE2LDQuOTQtMTEuMzEsNC45NC0xNi4yLDAtNi4xNS0yLjQ4LTExLjc5LTcuMDUtMTUuOTItNC4yOC0zLjg0LTkuOC01Ljk2LTE1LjU3LTUuOTYtMTQuMjEsMC0yNC41OSwxMi44OC0zMi4wNSwyNC4xLTYuMDksOS4xNi0xMS45MiwxOS43Ny0xNy4zOSwzMS42M2wtOC4wMi0uODdjLTQuNTctMy4xOC0xMS40NS02LjAzLTIxLjQzLTYuMDMtMTEuMzksMC0yMi41MiwzLjc0LTMzLjA2LDExLjExLTIuMTQsMS40OS00LjE4LDMuMDktNi4xNSw0Ljc4LTIuMjUtNC42NC01LjQ4LTcuNzgtOC4zOS05Ljg0LTUuOTMtNC4xOC0xMy4wMy02LjMxLTIxLjA5LTYuMzEtMTIuMTIsMC0yNC4xOCw0LjIyLTM1Ljg1LDEyLjU2LTguNDcsNi4wNC0xNS44NCwxMy40MS0yMS45MiwyMS45LS44Ni03LjEtMy4xNi0xMy41Ni02Ljg1LTE5LjI4LTYuMjEtOS41OS0xNS45OC0xNC44Ny0yNy41MS0xNC44Ny04LjM5LDAtMTYuNTUsMi43NC0yNC4zNiw4LjE2LS4xNy0uMi0uMzQtLjM5LS41MS0uNTktNC40NS00Ljg5LTEwLjg5LTcuNTgtMTguMTMtNy41OC01LjI3LDAtMTAuNDEsMS41My0xNS4yOCw0LjU1LTMuODgsMi40LTcuMDksNS4zNS05LjU0LDguNzVsLTEuNjksMi4zNi0uNDcsMi44M2MtLjIxLDEuMjctLjQ0LDIuNjQtLjY5LDQuMS0xLjA2LTIuNy0yLjM5LTUuMjgtMy45Ny03LjczLTYuMjEtOS41OS0xNS45OC0xNC44Ny0yNy41MS0xNC44Ny04LjM5LDAtMTYuNTUsMi43NC0yNC4zNiw4LjE2LS4xNy0uMi0uMzQtLjM5LS41MS0uNTktNC40NS00Ljg5LTEwLjg5LTcuNTgtMTguMTMtNy41OC01LjI3LDAtMTAuNDEsMS41My0xNS4yOCw0LjU1LTEuMjEuNzUtMi41OCwxLjc3LTMuOTEsMi44NS00Ljc4LTQuMjQtMTIuMjUtOC4xNS0yMy43MS04LjQ4LTkuODUtLjIxLTE4LjM2LDIuODMtMjQuNjYsOC45NC0yLjI4LDIuMjItNC4yMiw0Ljc5LTUuNzgsNy42OC0zLjM4LS4wOC02LjkxLjI1LTEwLjM2LDEuMzQtMi42NS44My01LjA5LDEuOTItNy4zNCwzLjIxLTEuNTEtNC4xMy0zLjkzLTcuODgtNy4yMi0xMS4xMS00LjItNC4xMi0xMS45Ni05LjAyLTI1LjA2LTkuMDItMTEuMzksMC0yMi41MSwzLjc0LTMzLjA2LDExLjExLTkuNjgsNi43Ny0xNy42MSwxNS42My0yMy41OCwyNi4zNC02LjA3LDEwLjktOS4xNSwyMi4zMy05LjE1LDMzLjk2LDAsMTMuNDEsNCwyNC4xNSwxMS44OSwzMS45NCw3LjkxLDcuOCwxOC42NiwxMS45MiwzMS4wOCwxMS45MiwxMC4wOCwwLDIwLjI5LTIuNTgsMzAuMzctNy42NywyLjAyLTEuMDMsNC4wMS0yLjEzLDUuOTYtMy4zMiw0LjM4LDQuODQsMTAuMTcsOC4yNCwxNy4wNSw5Ljg1LDIuNzkuNjYsNS43Ni45OSw4LjgyLjk5LDEzLjg0LDAsMjkuMzgtNi45Myw0MS4zMy0xNy44bC42NiwxLjE2YzYuMTksMTAuMDksMTYuNTMsMTUuODEsMjguMzYsMTUuODFoMTEuMDNsNC4xNC05LjY1YzYuOTQtMTQuMDksMTMuNDUtMjYuMTMsMTkuNDMtMzUuOTctLjA3LjMyLS4xNC42NS0uMjEuOTctLjg3LDQuMDctMS4zMSw3Ljg0LTEuMzEsMTEuMiwwLDkuMjYsMi45NSwxNy40NSw4LjUzLDIzLjY4LDYuMjIsNi45NSwxNC45OSwxMC42MywyNS4zNiwxMC42Myw2Ljc3LDAsMTMuMjEtMS43LDE5LjA2LTQuODcsNC44LDIuNjUsMTAuMjcsNCwxNi4xLDRoMTEuMDNsNC4xNC05LjY1YzYuOTQtMTQuMDksMTMuNDUtMjYuMTMsMTkuNDMtMzUuOTYtLjA3LjMyLS4xNC42NS0uMjEuOTctLjg3LDQuMDctMS4zMSw3Ljg0LTEuMzEsMTEuMiwwLDkuMjYsMi45NSwxNy40NSw4LjUzLDIzLjY4LDYuMjIsNi45NSwxNC45OSwxMC42MywyNS4zNiwxMC42Myw2LjgzLDAsMTUuOTEtMS43NywyNC45LTguODYsNy44Miw1LjkyLDE3Ljc3LDguOTIsMjkuNjUsOC45MiwxNC4yNiwwLDI4LjAzLTQuMzUsNDAuOTgtMTIuOTMuMzQuMzYuNjguNzEsMS4wMywxLjA2LDcuOTEsNy44LDE4LjY2LDExLjkyLDMxLjA4LDExLjkyLDEwLjA4LDAsMjAuMjktMi41OCwzMC4zNy03LjY3LDMtMS41Miw1LjkyLTMuMjIsOC43NS01LjExLjg2LDEuMDksMS43OSwyLjEyLDIuNzksMy4xLDYuODcsNi42OSwxNi4zNSwxMC4yMywyNy40LDEwLjIzLDEyLjQ0LDAsMjQuMzQtNC4xNCwzNS40Ni0xMi4zMi4wMy4wMy4wNy4wNi4xLjA5LDguMjIsNy42NCwxOS4yNCwxMS41MiwzMi43NCwxMS41MnMyNi44OS0zLjk5LDM5LjM3LTExLjg4YzQuNDgsNS4zOSwxMC41OSw5LjE5LDE3Ljg5LDEwLjksMi43OS42Niw1Ljc2Ljk5LDguODIuOTksMTguMTksMCwzOS4zMi0xMS45OCw1MS4zOC0yOS4xMywxLjYzLTIuMzIsNS4xMy03Ljc0LDguMTctMTIuNTEsMjMuMDMtLjUyLDI3LjU2LTE0LjYsMjguMjMtMTcuNDFsNi45OS00My4yOS0yMi4yMSwxNC44OFpNNTkwLjU4LDUwNi4xNmMwLTMuODEsMS4zOS04LjY4LDQuMDEtMTQuMDkuMjctLjU2LjU1LTEuMTIuODMtMS42NywzLjY3LDMuNTIsOC4yMyw1Ljc4LDEzLjIyLDYuNTYtMi45NiwyLjY4LTYuMDEsNC44My05LjEzLDYuNDEtMy4zLDEuNjgtNi4zLDIuNjEtOC45MywyLjc4TTY3Ny4wNCw0OTUuNWMtMS45NywyLjI4LTMuOTksNC4yOS02LjA0LDUuOTktMi4yLDEuODItNC4zMiwzLjIzLTYuMjgsNC4xNi4yNi00LjkxLDEuNjMtMTIuNjIsNS45OC0yNC4xMiwzLjY5LS4xMyw3LjU4LS4zMiwxMS42NC0uNTctMi40LDQuOTItNC4xNiw5Ljc4LTUuMjksMTQuNTVNMTYxLjI5LDUwNi4xNmMwLTMuODEsMS4zOS04LjY4LDQtMTQuMDguMjctLjU2LjU1LTEuMTIuODQtMS42NywzLjY4LDMuNTMsOC4yNSw1LjgsMTMuMjYsNi41Ni0yLjk1LDIuNjctNi4wMSw0LjgyLTkuMTQsNi40LTMuMjYsMS42NS02LjMzLDIuNjEtOC45NiwyLjc4Ij48L3BhdGg+CiAgPHBhdGggY2xhc3M9ImNscy0zIiBkPSJNODQ1Ljc0LDQzNi41MmMtMTcuMTYtOC44LTM2LjA3LTEuMjItNDIuMzcsNC44OS0yLjI4LDIuMjItNC4yMiw0LjgtNS43OSw3LjY4LTMuMzctLjEtNi45MS4yNS0xMC4zNiwxLjMzLTIuNzkuODgtNS40MSwyLjAzLTcuODgsMy40OC0yLjAyLTcuMjgtNi4zNC0xMS43OC0xMC4xMy0xNC40Ni01LjkzLTQuMTgtMTMuNy02LjMxLTIxLjc3LTYuMzEtMS43NSwwLTMuNTMuMTItNS4zMi4yOWwtMTEuMDguNzRzLTMyLjM0LDQuNDMtNDguNzEsNDYuOTFjLTE1LjU3LDQwLjM4LDMuNzIsNTQuNjUsNS42Niw1NS45Ni4wMi0uMDIuMDQtLjAzLjA3LS4wNS4wMy4wMy03LjAzLTUuNS4xLjA5LDcuMTMsNS41OSwxOS4yNCwxMS41MiwzMi43NCwxMS41MnMyNi44OS0zLjk5LDM5LjM3LTExLjg4YzQuNDgsNS4zOSwxMC41OSw5LjE5LDE3Ljg5LDEwLjksMi43OS42Niw1Ljc2Ljk5LDguODIuOTksMTguMTksMCwzOS4zMi0xMS45OCw1MS4zOC0yOS4xMywxLjYzLTIuMzIsNS4xMy03Ljc0LDguMTctMTIuNTEsMjMuMDMtLjUyLDI3LjU2LTE0LjYsMjguMjMtMTcuNDFsNi45OS00My4yOS0yMi4yLDE0Ljg4Yy0xLjEtMy4zNCwzLjM1LTE1Ljg0LTEzLjgtMjQuNjQiPjwvcGF0aD4KICA8cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik03ODYuOTgsNTQ5LjdjLTMuMTQsMC02LjE5LS4zNC05LjA3LTEuMDEtNy4wOS0xLjY2LTEzLjI0LTUuMjktMTcuODYtMTAuNTQtMTIuNDIsNy42Ny0yNS41OSwxMS41NS0zOS4xNSwxMS41NS0xNi43NCwwLTI5LjM1LTguNjEtMzMuMTctMTEuNTZsLS4zNS0uMTljLS4zOC0uMjYtMS4yMy0uODctMi4zMS0xLjktLjQxLS4zMi0uNzItLjU2LS43Ni0uNTlsLjA0LS4wNWMtLjI3LS4yNS0uNDMtLjQ0LS41MS0uNjEtNS43NC02LjI3LTE0LjgxLTIyLjI2LTIuNTQtNTQuMTEsOC41Ny0yMi4yMiwyMS41NS0zMy45NywzMC45My0zOS45MSwxMC4yMi02LjQ3LDE4LjMxLTcuNjQsMTguNjUtNy42OWwxMS4xNi0uNzRjMi4wNy0uMiwzLjc5LS4zLDUuMzktLjMsOC40OSwwLDE2LjQ1LDIuMzEsMjIuMzksNi41MSwzLjQxLDIuNDEsNy44NCw2LjcxLDEwLjE1LDEzLjc0LDIuMTgtMS4xNyw0LjUtMi4xNSw2LjkxLTIuOSwzLjEtLjk3LDYuNDktMS40MywxMC4wNS0xLjQsMS41Ni0yLjc1LDMuNDYtNS4yMyw1LjY2LTcuMzYsNi40Ni02LjI2LDI1Ljg4LTE0LjE3LDQzLjYyLTUuMDgsMTQuMjcsNy4zMiwxNC4yMSwxNy4yMywxNC4xOSwyMi41NSwwLC40MSwwLC44LDAsMS4xNmwyMi44LTE1LjI4LTcuMzksNDUuNzdjLS43MSwzLjAxLTUuMzUsMTcuNTUtMjguNywxOC4zMS0yLjc2LDQuMzItNi4yNSw5LjczLTcuODgsMTIuMDYtMTIuMjYsMTcuNDItMzMuNzYsMjkuNTktNTIuMjgsMjkuNTlNNzYwLjUsNTM1LjI5bC42MS43NGM0LjM3LDUuMjcsMTAuMzYsOC45MSwxNy4zLDEwLjU0LDIuNzEuNjQsNS42Ljk2LDguNTcuOTYsMTcuODYsMCwzOC42Mi0xMS43OCw1MC40OS0yOC42NiwxLjY3LTIuMzgsNS4zNS04LjA5LDguMTQtMTIuNDZsLjMxLS40OWguNThjMjIuMjQtLjUxLDI2LjU1LTEzLjksMjcuMTktMTYuNThsNi41Ny00MC43My0yMS4zMSwxNC4yOC0uNDUtMS4zN2MtLjI4LS44NS0uMjctMS45OC0uMjctMy40MS4wMy01LjIuMDctMTMuODktMTMtMjAuNi0xNi43Ni04LjYtMzUuMDQtMS4xOC00MS4xMSw0LjctMi4xOSwyLjEzLTQuMDcsNC42Mi01LjU4LDcuNDFsLS4zMi41OS0uNjctLjAyYy0zLjU4LS4wOS02Ljk0LjMzLTEwLDEuMjgtMi43Ljg1LTUuMjgsMS45OS03LjY2LDMuMzhsLTEuMjIuNzItLjM4LTEuMzdjLTItNy4yLTYuMzgtMTEuNTEtOS43MS0xMy44Ni01LjU4LTMuOTQtMTMuMDktNi4xMS0yMS4xNC02LjExLTEuNTMsMC0zLjE5LjA5LTUuMjEuMjlsLTExLjEyLjc0Yy0uMjQuMDQtMzEuODQsNC44OC00Ny43Nyw0Ni4yMS0xMi42OSwzMi45MS0yLjAyLDQ3Ljk2LDMuMDksNTIuODguMTguMTQuMzguMjkuNTkuNDYuMzYuMjguNzMuNTcsMS4wMy44MWwxLjU2LDEuMjJjNC4yNCwzLjE2LDE1Ljk2LDEwLjY4LDMxLjI3LDEwLjY4LDEzLjQ0LDAsMjYuNDktMy45NCwzOC43OS0xMS43MWwuODEtLjUxWiI+PC9wYXRoPgogIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTg1OC4xOSw0NzUuMDFjLTEuMzgsMS40Ni02LjIyLDUuNy0xMC4yNiw1LjkxbC0uMjIuMDJjLS43MS4wOC0xLjMyLjEzLTEuODMuMTQuNDgtMS4zOS45OS0yLjk1LDEuMzMtNC4xNywyLjgzLTEwLjIxLDEuOTktMTguOS0yLjM2LTI0LjQ5LTMuNjItNC42NC05LjQtNy4xMS0xNy4xOC03LjMzLTYuMTQtLjE2LTExLjE3LDEuNTctMTQuOSw1LjE4LTQuMDksMy45Ny01LjY0LDkuMzQtNi4yMiwxMy4xOS00LjA4LTEuMzMtMTAuMTMtMi42My0xNS4yLTEuMDUtMTIuMjEsMy44My0xOC41OSwxNi42Mi0yMi4zNSwyOC42NC00Ljk4LDcuNzktMTEuMTksMTQuNS0xOC41MywxOS45OC04LjQ5LDYuMzMtMTYuODQsOS41NC0yNC44MSw5LjU0LTUuNTYsMC05LjEtMS4yNS0xMC41My0zLjctMS43OS0zLjA3LTIuNy02LjE1LTIuNy05LjE2LDAtLjY1LjAyLTEuMjcuMDYtMS44NSw4LjItMS4xNiwxNi4zMy0zLjUsMjQuMjEtNi45Nyw4LjgzLTMuOSwxNi4xNS05LjAxLDIxLjc3LTE1LjE4LDUuODYtNi40NCw4LjgzLTEzLjQ1LDguODMtMjAuODQsMC02LjAzLTEuOTktMTAuNDktNS45Mi0xMy4yNi0zLjYxLTIuNTUtOC4wNy0zLjg0LTEzLjI2LTMuODQtOS4yMSwwLTE4LjYyLDMuMzgtMjcuOTYsMTAuMDUtOS4xMiw2LjUxLTE2LjcsMTQuNjktMjIuNTIsMjQuMzMtNC4zNiw3LjIyLTcuMTIsMTQuMTgtOC4yNywyMC43Ny0uMDQuMDUtLjA4LjEtLjEyLjE0LS4yMiwyLjc5LS4zOCw1LjYxLS4zOSw4LjEzLS4wMiwzLjI4LjYzLDYuMTQsMS40OSw4LjQ5LjAzLS4wMy4wNi0uMDYuMDgtLjA5LDEuNDEsMy45NCwzLjcsNy40NCw2LjkyLDEwLjQzLDUuNjgsNS4yNywxMy42LDcuOTUsMjMuNTQsNy45NSwxMi4yLDAsMjQuMTEtNC4wNCwzNS40LTEyLDMuMjctMi4zMSw2LjMxLTQuODgsOS4xNS03LjYzLDEuMzQsOS45Myw2Ljg3LDE2LjkyLDE1Ljg1LDE5LjAyLDEuOC40MiwzLjcuNjIsNS42OC42MiwxMy42MSwwLDMwLjYzLTkuNjEsNDAuNDMtMjMuNTUsMi4zMS0zLjI5LDkuMTEtMTMuOTksMTIuMDEtMTguNTcsMS40NC4yNywzLjM4LjUxLDUuOC41MSwxNC4wMywwLDE2LjMzLTYuMTgsMTYuNjgtNy42NWw1LjEyLTIxLjEtOC44Myw5LjRaTTcyMy45Miw0ODAuMDJjMy45Ni01LjQ5LDguMzUtMTAuMiwxMy4wNC0xMy43Nyw0LjMzLTMuMyw4LjIzLTUuMDMsMTEuNi01LjAzLjA5LDAsLjE3LS4wMi4yNC0uMDIuMDIuMTcuMDMuMzcuMDMuNjUsMCw0LjAxLTEuOTgsOC42OS01Ljg5LDEzLjA5LTQuMTgsNC43MS05LjM2LDguMDgtMTUuMzgsMTIuNGgwYy0zLjYzLDEuMDgtNy4wNiwyLjk5LTEwLjI0LDMuOTUsMS43NC0zLjY4LDMuOTUtNy41OSw2LjYxLTExLjI3TTc5MS40OCw1MTcuMThjLTEuMjgtLjUyLTIuMTctMS41Mi0yLjcyLTMuMDYtMS43MS00Ljc3LjI3LTEzLjU4LDQuODItMjEuNDMsNC4yNS03LjM0LDEwLjQ4LTEzLjc0LDE0LjQ0LTE3LjQxLDEuMjcsMi4zNCwzLjQzLDUuMTIsNy4xMSw3Ljg0LDMuOSwyLjg3LDcuMTYsNC42NSw5LjUyLDUuNzMtNi45NSwxMS4yNi0yMi43NywzMi41Ni0zMy4xNywyOC4zM004MzEuMTIsNDc1Ljc3Yy0xLjU0LS45MS0zLjU0LTIuNDItNS4zNi00LjgxLTIuMDYtMi42OS0yLjk3LTUuODYtMi4zMy04LjA4LjM0LTEuMTgsMS4wOS0yLDIuMy0yLjQ5LjY4LS4yOCwxLjM1LS40MSwxLjk5LS40MS43OCwwLDEuNTIuMiwyLjE5LjYxLDEuNzMsMS4wNCwyLjg0LDMuMjMsMi45OCw1Ljg4LjIsMy44My0uODEsNy4wNy0xLjc3LDkuMzEiPjwvcGF0aD4KICA8cGF0aCBjbGFzcz0iY2xzLTUiIGQ9Ik02NzcuMzcsNTE5LjQ0Yy0uMzQtMi4yNi0uNTYtNC4zMi0uNzEtNi4xMS01Ljg0LDQuMTgtMTEuNTIsNi4zMS0xNi45Myw2LjMxLTIuOTQsMC00Ljk1LS43My02LjE2LTIuMjQtLjk2LTEuMi0yLjExLTMuOTEtMi4xMS0xMC4wMSwwLTkuODUsMy40LTIyLjcyLDEwLjEtMzguMywxMS41Ny0uMSwyNi45NC0xLjE2LDI2Ljk0LTEuMTYsMCwwLC40LTEuMDYsNC41OS03LjIzLDMuNzEtNC44Myw1Ljk0LTcuMzksNS45NC03LjM5LDAsMC0xNi4yNCwxLjMtMzAuMDQsMS40LDMuMjUtNS44OCw3LjI0LTEyLjgyLDEyLjE1LTIwLjcyLDQuNTktNy41NCw3LjktMTMuMjksOS45Ni0xNy4wOSwyLjI5LTQuMjMsMy4zOC03LjYzLDMuMzgtMTAuMzhzLTEuMDItNC45OS0yLjkyLTYuNzFjLTEuODUtMS42Ni00LjEyLTIuNTQtNi41NS0yLjU0LTUuOTksMC0xMi42NCw1LjgtMjAuOTEsMTguMjUtNy4xMywxMC43My0xMy45MiwyMy42My0yMC4xOSwzOC4zOS0yLjU2LS4yMy01LjA5LS41LTcuNjgtLjgxbC0zLjc2LS40NnYxMi4yMWwxLjk2Ljg2YzEsLjQzLDIuNDEuODUsNC4zOSwxLjMtMi40Nyw2LjY4LTQuNTgsMTMuMTMtNi4zMiwxOS4yOS0yLjc3LDUuODEtNi4yOCwxMS4xLTEwLjU0LDE1LjY4LTUuMDIsNS40MS0xMC40OCw5LjYzLTE2LjIyLDEyLjUzLTUuNjEsMi44NC0xMSw0LjI5LTE2LjAyLDQuMjktNC42LDAtNy43OC0xLjA5LTkuNDYtMy4yNS0xLjkzLTIuNDgtMi44Ny01LjU1LTIuODctOS4zOSwwLTUuNzIsMS43Ni0xMi4yNCw1LjIyLTE5LjQsMy41MS03LjI1LDcuOTEtMTMuNTEsMTMuMDktMTguNiw0Ljc3LTQuNjksOS4xLTcuMDcsMTIuODUtNy4wNy40LDAsLjY1LjA0Ljc5LjA3LDAsLjA3LjAyLjE2LjAyLjI4LDAsMy4yOC0uNjIsNi4xNS0xLjg2LDguNTEtMS4xOSwyLjI3LTIuNDcsMy44OS0zLjcyLDQuNjdsLTIuNzcsMS43NiwxLjc3LDIuNjljMy4wMiw0LjU4LDYuOTcsNS41NCw5Ljc0LDUuNTQsMy4wMywwLDcuMzYtMS4yMiwxMC44Mi03LjA1LDIuNDMtNC4wOSwzLjY2LTguNTgsMy42Ni0xMy4zNywwLTUuMDktMS43OC05LjQyLTUuMjktMTIuODctMy41My0zLjQ2LTguNzktNS4yMi0xNS42Mi01LjIyLTguNTMsMC0xNy4wMywyLjkyLTI1LjI3LDguNjgtOC4wNyw1LjY0LTE0LjcsMTMuMDctMTkuNzIsMjIuMDgtMy42Niw2LjU3LTUuOTksMTMuMzQtNy4wMSwyMC4yLTQuMTUsNS4zMi04Ljk1LDEwLjAyLTE0LjM2LDE0LjA2LTguNDksNi4zMy0xNi44NCw5LjU0LTI0LjgxLDkuNTQtNS41NiwwLTkuMS0xLjI1LTEwLjUzLTMuNy0xLjc5LTMuMDctMi43LTYuMTUtMi43LTkuMTYsMC0uNjUuMDItMS4yNy4wNi0xLjg1LDguMi0xLjE1LDE2LjMzLTMuNSwyNC4yMS02Ljk3LDguODMtMy45LDE2LjE1LTkuMDEsMjEuNzctMTUuMTgsNS44Ni02LjQ0LDguODMtMTMuNDUsOC44My0yMC44NCwwLTYuMDMtMS45OS0xMC40OS01LjkyLTEzLjI2LTMuNjEtMi41NS04LjA3LTMuODQtMTMuMjYtMy44NC05LjIxLDAtMTguNjIsMy4zOC0yNy45NiwxMC4wNS03LjY1LDUuNDYtMTQuMTksMTIuMTEtMTkuNTQsMTkuNzlsLTEuNzQsMi42MWMtLjQxLjY0LS44NCwxLjI4LTEuMjQsMS45My0zLjQ1LDUuNzItNS44OCwxMS4yNi03LjMyLDE2LjYtMi4xOCw0LjA1LTQuNDYsNy44My02LjgzLDExLjMtNC43MSw2Ljg5LTkuMTksMTAuNjgtMTIuNiwxMC42OC0uMiwwLS40OSwwLS45OS0uNjEtLjI0LS4yOS0uOC0xLjI2LS44LTMuODgsMC0zLjQsMS4xOC04LjczLDMuNDktMTUuNzgsMS42Mi00LjU1LDIuODYtOC43MiwzLjY3LTEyLjM5Ljg0LTMuNzcsMS4yNi03Ljc3LDEuMjYtMTEuODksMC03LjM0LTEuNzctMTMuOC01LjI2LTE5LjItMy43Ni01LjgxLTkuNC04Ljg5LTE2LjI5LTguODktNy42OCwwLTE1LjQ0LDMuNzQtMjMuMDUsMTEuMTItMy42MywzLjUyLTcuMjIsNy41OC0xMC43MywxMi4xNSwxLjA0LTUuMTMsMS43NS05LjQxLDEuNzUtMTIsMC0zLjI4LS45My01Ljk3LTIuNzgtOC4wMi0xLjM1LTEuNDgtMy44Ny0zLjI1LTguMTgtMy4yNS0yLjY4LDAtNS40MS44NS04LjExLDIuNTItMi41MywxLjU3LTQuNDIsMy4zNS01LjgyLDUuMywwLDAtNC41MSwyNy40LTYuNSwzNC4zMy0yLDYuOTMtNy4xOSwxNC4wMi0xMS4xNCwxOS44MS00LjcxLDYuODktOS4yMSwxMC42OC0xMi42MywxMC42OC0uMiwwLS41MSwwLTEtLjYxLS4yNC0uMjktLjgtMS4yNi0uOC0zLjg4LDAtMy40LDEuMTgtOC43MywzLjQ5LTE1Ljc4LDEuNjItNC41NSwyLjg1LTguNzIsMy42Ny0xMi4zOS44NC0zLjc3LDEuMjYtNy43NywxLjI2LTExLjg5LDAtNy4zNC0xLjc3LTEzLjgtNS4yNi0xOS4yLTMuNzYtNS44MS05LjQtOC44OS0xNi4yOS04Ljg5LTcuNjgsMC0xNS40NCwzLjc0LTIzLjA1LDExLjEyLTMuNjMsMy41Mi03LjIyLDcuNTgtMTAuNzMsMTIuMTUsMS4wNC01LjEzLDEuNzUtOS40MSwxLjc1LTEyLDAtMy4yOC0uOTMtNS45Ny0yLjc4LTguMDItMS4zNS0xLjQ4LTMuODctMy4yNS04LjE4LTMuMjUtMi42OCwwLTUuNDEuODUtOC4xMSwyLjUyLTIuNTMsMS41Ny03LjQsNi4xMy03LjQsNi4xMywwLDAtLjgyLDE0LjQ0LTMuMTgsMjQuNDQsMCwwLTEuNjMsMS4xMS0zLjE3LDEuNjMtMS42NC41Ni0zLjI1LjE2LTMuMjUuMTYuNDgtMS4zOSwxLjAyLTIuOTUsMS4zNi00LjE3LDIuODMtMTAuMjEsMi0xOC45MS0yLjM1LTI0LjQ5LTMuNjItNC42NC05LjM5LTcuMTEtMTcuMTctNy4zMy02LjE0LS4xNi0xMS4xNiwxLjU3LTE0Ljg5LDUuMTgtNC4wOSwzLjk3LTUuNjQsOS4zNC02LjIyLDEzLjE5LTQuMDktMS4zMy0xMC4xMy0yLjY0LTE1LjItMS4wNS0xNC40OCw0LjU1LTIwLjc4LDIxLjY5LTI0LjIxLDM1LjIxLTEuMTYsMS41Mi0yLjM5LDIuOTgtMy42OSw0LjM3LTUuMDIsNS40MS0xMC40OCw5LjYzLTE2LjIyLDEyLjUzLTUuNjEsMi44NC0xMSw0LjI5LTE2LjAyLDQuMjktNC42LDAtNy43OC0xLjA5LTkuNDYtMy4yNS0xLjkzLTIuNDgtMi44Ny01LjU1LTIuODctOS4zOSwwLTUuNzIsMS43Ni0xMi4yNCw1LjIyLTE5LjQsMy41MS03LjI1LDcuOTEtMTMuNTEsMTMuMDktMTguNiw0Ljc3LTQuNjksOS4xLTcuMDcsMTIuODUtNy4wNy40LDAsLjY1LjA0Ljc5LjA3LDAsLjA3LjAyLjE2LjAyLjI4LDAsMy4yOC0uNjIsNi4xNS0xLjg2LDguNTEtMS4xOSwyLjI3LTIuNDcsMy44OC0zLjcyLDQuNjhsLTIuNzcsMS43NiwxLjc3LDIuNjljMy4wMiw0LjU4LDYuOTcsNS41NCw5Ljc0LDUuNTQsMy4wMiwwLDcuMzYtMS4yMiwxMC44Mi03LjA1LDIuNDMtNC4wOSwzLjY2LTguNTgsMy42Ni0xMy4zNywwLTUuMDktMS43OC05LjQyLTUuMjktMTIuODctMy41My0zLjQ2LTguNzktNS4yMi0xNS42Mi01LjIyLTguNTMsMC0xNy4wMywyLjkyLTI1LjI3LDguNjgtOC4wNiw1LjY0LTE0LjcsMTMuMDctMTkuNzIsMjIuMDgtNS4wNCw5LjA1LTYuOSwxOC40OC02LjksMjguMDIsMCwxMC4wMSwzLjQ3LDE3LjgsOC44NiwyMy4xNGgwYzYuNDgsNS4zNywxMi4wMSw4LjA5LDIwLjksOC4wOSw3LjkxLDAsMTUuNjktMi4wOSwyMy44NC02LjIsNS45OC0zLjAzLDExLjQzLTYuOTQsMTYuNjEtMTEuNjUsMS43Nyw4LjksNy4wOCwxNS4xMSwxNS40NSwxNy4wNywxLjguNDIsMy42Ni42Miw1LjY0LjYyLDEzLjYxLDAsMzAuNjEtOS42MSw0MC40MS0yMy41NSwyLjMxLTMuMjksOS4xLTEzLjk5LDEyLTE4LjU3LDEuNDQuMjcsMy4zOC41MSw1LjguNTEsMS4yOSwwLDIuNDUtLjA3LDMuNTQtLjE2LTEuOTQsNi43OS00LjIxLDE0LjE0LTYuODIsMjEuOTRsLTIuMzMsOC4wMS43MywxLjI2YzMuNzYsNi4xMiw5LjYzLDkuNDIsMTYuOTgsOS40MmgyLjE2bC45Mi0xLjk0YzguODItMTcuOTUsMTcuMTktMzMsMjQuODYtNDQuNjksNy4wOC0xMC43NywxMy44OS0xNi4yNSwyMC4yNC0xNi4yNSwxLjE0LDAsMS45Ni4zOSwyLjc2LDEuMzMuNjQuNzUsMS40LDIuMzcsMS40LDUuODIsMCwzLjY1LS45OSw5LjUtMi45NCwxNy40NC0uNzMsMy4wNS0xLjQyLDYuMS0yLjA3LDkuMTUtLjY5LDMuMjMtMS4wNCw2LjE1LTEuMDQsOC42NiwwLDYuMywxLjgsMTEuNSw1LjM1LDE1LjQ3LDMuNjksNC4xMiw4Ljg1LDYuMjEsMTUuMzMsNi4yMSw3LjE5LDAsMTMuNzQtMi44OSwxOS41Ni04LjY2LDMuNzUsNC44NCw5LjA5LDcuNDYsMTUuNjEsNy40NmgyLjE2bC45Mi0xLjk0YzguODItMTcuOTUsMTcuMTktMzMsMjQuODYtNDQuNjksNy4wOC0xMC43NywxMy44OC0xNi4yNSwyMC4yMy0xNi4yNSwxLjE0LDAsMS45Ni4zOSwyLjc2LDEuMzMuNjQuNzUsMS40LDIuMzcsMS40LDUuODIsMCwzLjY1LS45OSw5LjUtMi45NCwxNy40NC0uNzMsMy4wNS0xLjQyLDYuMS0yLjA3LDkuMTUtLjY5LDMuMjMtMS4wNCw2LjE1LTEuMDQsOC42NiwwLDYuMywxLjgsMTEuNSw1LjM1LDE1LjQ3LDMuNjksNC4xMiw4Ljg1LDYuMjEsMTUuMzMsNi4yMSw5LjIsMCwxNy4zNy00Ljc4LDI0LjI4LTE0LjIuMzItLjQ0LjY0LS45Mi45Ni0xLjM4LDEuNDEsMi44NCwzLjMxLDUuNDIsNS43Niw3LjcsNS42OCw1LjI3LDEzLjYsNy45NSwyMy41NCw3Ljk1LDEyLjIsMCwyNC4xMi00LjA0LDM1LjQtMTIsMy4zNi0yLjM3LDYuNzktNS4wMiw5LjctNy44NiwxLjMzLDQuNzQsMy43OSw4LjcxLDcuMDIsMTEuODNoMGM1LjQsNS4zNywxMi40LDguMDksMjEuMjksOC4wOSw3LjkxLDAsMTUuODktMi4wOSwyNC4wMy02LjIsNy41MS0zLjgsMTQuMzYtOSwyMC41Ny0xNS40My40Niw2LjY5LDIuNiwxMS45OCw2LjQ1LDE1Ljc0LDQuMzksNC4yOCwxMC40Miw2LjQ1LDE3Ljk2LDYuNDUsOS4zNCwwLDE4LjQ0LTMuMjEsMjcuMTMtOS41Mi0uOTQtMS44OS0xLjg4LTQuNDUtMi4zOC03LjcyTTUxMy4yLDQ4MC4xYzMuOTYtNS40OSw4LjM1LTEwLjE4LDEzLjA0LTEzLjc2LDQuMzMtMy4zLDguMjMtNS4wMiwxMS42LTUuMDIuMDksMCwuMTctLjAyLjI0LS4wMi4wMi4xNy4wMy4zNy4wMy42NiwwLDQtMS45OCw4LjYzLTUuODksMTMuMDMtNC4xOCw0LjcxLTkuMzYsOC4wMy0xNS4zOSwxMi4zNGgwYy0zLjYzLDEuMDgtNy4wNiwzLjA0LTEwLjI0LDQsMS43NC0zLjY4LDMuOTUtNy41Nyw2LjYtMTEuMjRNMjIwLjY5LDUxNy4xOGMtMS4yOC0uNTItMi4xNy0xLjUyLTIuNzItMy4wNi0xLjcxLTQuNzYuMjctMTMuNTgsNC44Mi0yMS40Myw0LjI1LTcuMzQsMTAuNDgtMTMuNzQsMTQuNDQtMTcuNDEsMS4yNywyLjM0LDMuNDMsNS4xMiw3LjExLDcuODQsMy45LDIuODcsNy4xNiw0LjY1LDkuNTIsNS43My02Ljk1LDExLjI2LTIyLjc3LDMyLjU2LTMzLjE3LDI4LjMzTTI2MC4zMyw0NzUuNzdjLTEuNTQtLjkxLTMuNTQtMi40Mi01LjM2LTQuODEtMi4wNi0yLjY5LTIuOTctNS44Ni0yLjMzLTguMDguMzQtMS4xOCwxLjA5LTIsMi4zLTIuNDkuNjgtLjI4LDEuMzUtLjQxLDEuOTktLjQxLjc4LDAsMS41Mi4yLDIuMTkuNjEsMS43MywxLjA0LDIuODQsMy4yMywyLjk4LDUuODguMiwzLjgzLS44MSw3LjA3LTEuNzcsOS4zMSI+PC9wYXRoPgo8L3N2Zz4K" // ⚠️ 2ème endroit à remplacer
+const STATUTS = {
+  0: {label: 'Annulé', class: 'statut-0', pct: 0},
+  1: {label: 'A initier', class: 'statut-1', pct: 0},
+  2: {label: 'En cours', class: 'statut-2', pct: 0.5},
+  3: {label: 'Clôturé', class: 'statut-3', pct: 1}
+};
+
+const DEFAULT_ACTIONS = [
+  {action: 'Diagnostic pre-formation', livrable: 'Compilation donnée pre-formation', statut: 1, debut: '2026-10-13', finPrevue: '2026-10-23', finReelle: '', support: '', commentaire: ''},
+  {action: 'Préparation module', livrable: 'Module de formation', statut: 1, debut: '2026-10-26', finPrevue: '2026-10-30', finReelle: '', support: '', commentaire: ''},
+  {action: 'Envoie invitation aux participants', livrable: 'Mail', statut: 1, debut: '2026-10-27', finPrevue: '2026-10-27', finReelle: '', support: '', commentaire: ''},
+  {action: 'Réservation salle', livrable: 'Salle Zen', statut: 1, debut: '2026-10-27', finPrevue: '2026-10-27', finReelle: '', support: '', commentaire: ''},
+  {action: 'Déploiement formation GRC 1ère vague (1ère session)', livrable: 'Fiche de présence', statut: 1, debut: '2026-11-04', finPrevue: '2026-11-05', finReelle: '', support: '', commentaire: ''},
+  {action: 'Déploiement formation GRC 1ère vague (2ème session)', livrable: 'Fiche de présence', statut: 1, debut: '2026-11-11', finPrevue: '2026-11-12', finReelle: '', support: '', commentaire: ''},
+  {action: 'Déploiement formation GRC 1ère vague (3ème session)', livrable: 'Fiche de présence + Rapport de formation', statut: 1, debut: '2026-11-18', finPrevue: '2026-11-18', finReelle: '', support: '', commentaire: ''},
+  {action: 'Déploiement formation GRC 2ème vague (1ère session)', livrable: 'Fiche de présence', statut: 1, debut: '2026-11-25', finPrevue: '2026-11-26', finReelle: '', support: '', commentaire: ''},
+  {action: 'Déploiement formation GRC 2ème vague (2ème session)', livrable: 'Fiche de présence', statut: 1, debut: '2026-12-02', finPrevue: '2026-12-03', finReelle: '', support: '', commentaire: ''},
+  {action: 'Déploiement formation GRC 2ème vague (3ème session)', livrable: 'Fiche de présence + Rapport de formation', statut: 1, debut: '2026-12-09', finPrevue: '2026-12-09', finReelle: '', support: '', commentaire: ''},
+  {action: 'Accompagnement', livrable: '', statut: 1, debut: '', finPrevue: '', finReelle: '', support: '', commentaire: ''},
+  {action: 'Repiquage', livrable: '', statut: 1, debut: '', finPrevue: '', finReelle: '', support: '', commentaire: ''},
+  {action: 'Clôture final de prestation', livrable: 'Rapport de fin de formation', statut: 1, debut: '', finPrevue: '', finReelle: '', support: '', commentaire: 'Remis dans les 5 jours suivant les séances'}
+];
+
+let state = { client: '', projet: '', type1: '', type2: '', actions: [] };
+
+/* =========================================================
+   INIT
+   ========================================================= */
+function init() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      state = JSON.parse(saved);
+      if (!state.actions || !state.actions.length) state.actions = [...DEFAULT_ACTIONS];
+    } catch(e) {
+      state = {client:'', projet:'', type1:'', type2:'', actions: [...DEFAULT_ACTIONS]};
+    }
+  } else {
+    state = {client:'', projet:'', type1:'', type2:'', actions: [...DEFAULT_ACTIONS]};
+  }
+  fillInfo();
+  renderTable();
+  updateKPI();
+}
+
+function fillInfo() {
+  document.getElementById('client').value = state.client || '';
+  document.getElementById('projet').value = state.projet || '';
+  document.getElementById('type1').value = state.type1 || '';
+  document.getElementById('type2').value = state.type2 || '';
+}
+
+/* =========================================================
+   TABLE RENDER
+   ========================================================= */
+function renderTable() {
+  const tbody = document.getElementById('actions-body');
+  tbody.innerHTML = '';
+  state.actions.forEach((a, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" value="${escapeAttr(a.action)}" oninput="updateField(${i},'action',this.value)" placeholder="Intitulé de l'action"></td>
+      <td><input type="text" value="${escapeAttr(a.livrable)}" oninput="updateField(${i},'livrable',this.value)" placeholder="Livrable"></td>
+      <td>
+        <select onchange="updateField(${i},'statut',parseInt(this.value))">
+          ${[1,2,3,0].map(s => `<option value="${s}" ${a.statut===s?'selected':''}>${s} - ${STATUTS[s].label}</option>`).join('')}
+        </select>
+      </td>
+      <td class="computed ${STATUTS[a.statut].class}">${STATUTS[a.statut].label}</td>
+      <td class="computed">${formatPct(STATUTS[a.statut].pct)}</td>
+      <td class="computed">${computeDelai(a.debut, a.finPrevue)}</td>
+      <td class="computed">${computeDelai(a.debut, a.finReelle)}</td>
+      <td><input type="date" value="${a.debut||''}" onchange="updateField(${i},'debut',this.value)"></td>
+      <td><input type="date" value="${a.finPrevue||''}" onchange="updateField(${i},'finPrevue',this.value)"></td>
+      <td><input type="date" value="${a.finReelle||''}" onchange="updateField(${i},'finReelle',this.value)"></td>
+      <td><input type="text" value="${escapeAttr(a.support)}" oninput="updateField(${i},'support',this.value)" placeholder="Support"></td>
+      <td><input type="text" value="${escapeAttr(a.commentaire)}" oninput="updateField(${i},'commentaire',this.value)" placeholder="Commentaire"></td>
+      <td style="text-align:center"><button class="row-del" onclick="deleteRow(${i})" title="Supprimer"><i class="fas fa-trash"></i></button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  saveLocalSilent();
+}
+
+function escapeAttr(s) {
+  return (s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function formatPct(p) {
+  if (p === 0) return '0%';
+  if (p === 0.5) return '50%';
+  if (p === 1) return '100%';
+  return p + '%';
+}
+function computeDelai(debut, fin) {
+  if (!debut || !fin) return '—';
+  const d1 = new Date(debut);
+  const d2 = new Date(fin);
+  if (isNaN(d1) || isNaN(d2)) return '—';
+  const diff = Math.round((d2 - d1) / (1000*60*60*24)) + 1;
+  return diff > 0 ? diff + ' j' : '—';
+}
+
+/* =========================================================
+   UPDATE FIELD
+   ========================================================= */
+function updateField(idx, field, value) {
+  state.actions[idx][field] = value;
+  if (field === 'statut' || field === 'debut' || field === 'finPrevue' || field === 'finReelle') {
+    renderTable();
+    updateKPI();
+  } else {
+    saveLocalSilent();
+  }
+}
+
+/* =========================================================
+   ADD / DELETE
+   ========================================================= */
+function addRow() {
+  state.actions.push({action:'', livrable:'', statut:1, debut:'', finPrevue:'', finReelle:'', support:'', commentaire:''});
+  renderTable();
+  updateKPI();
+  const tbody = document.getElementById('actions-body');
+  tbody.lastElementChild.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function deleteRow(idx) {
+  if (!confirm('Supprimer cette action ?')) return;
+  state.actions.splice(idx, 1);
+  renderTable();
+  updateKPI();
+}
+
+/* =========================================================
+   KPI
+   ========================================================= */
+function updateKPI() {
+  const actives = state.actions.filter(a => a.statut !== 0);
+  const activesStrictes = state.actions.filter(a => a.statut !== 0 && a.statut !== 1);
+  const annulees = state.actions.filter(a => a.statut === 0);
+
+  const avgAvancement = actives.length
+    ? Math.round((actives.reduce((s,a) => s + STATUTS[a.statut].pct, 0) / actives.length) * 100)
+    : null;
+  const avgActif = activesStrictes.length
+    ? Math.round((activesStrictes.reduce((s,a) => s + STATUTS[a.statut].pct, 0) / activesStrictes.length) * 100)
+    : null;
+
+  document.getElementById('kpi-avancement').textContent = avgAvancement !== null ? avgAvancement + '%' : '—';
+  document.getElementById('kpi-actif').textContent = avgActif !== null ? avgActif + '%' : '—';
+  document.getElementById('kpi-annulation').textContent = annulees.length;
+}
+
+/* =========================================================
+   SAVE
+   ========================================================= */
+function saveLocalSilent() {
+  state.client = document.getElementById('client').value;
+  state.projet = document.getElementById('projet').value;
+  state.type1 = document.getElementById('type1').value;
+  state.type2 = document.getElementById('type2').value;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function saveLocal() {
+  saveLocalSilent();
+  showToast('Sauvegarde réussie ✓', 'success');
+}
+
+function resetAll() {
+  if (!confirm('Réinitialiser les données du projet en cours ?')) return;
+  const proj = getCurrentProject();
+  if (!proj) return;
+  proj.actions = JSON.parse(JSON.stringify(DEFAULT_ACTIONS));
+  proj.client = proj.client || '';
+  proj.projet = proj.projet || '';
+  proj.type1 = '';
+  proj.type2 = '';
+  proj.updated = new Date().toISOString();
+  saveApp();
+  loadCurrentIntoUI();
+  refreshProjectSelect();
+  showToast('Projet réinitialisé', 'success');
+}
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.className = 'toast show ' + (type || '');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => t.className = 'toast ' + (type || ''), 3000);
+}
+
+/* =========================================================
+   SVG → PNG (offline) : convertit le SVG base64 en PNG base64
+   ========================================================= */
+async function svgToPngBase64(svgBase64, width = 320, height = 80) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      // Fond blanc pour cohérence
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, width, height);
+      // Dessiner le SVG redimensionné
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(null);
+    img.src = 'data:image/svg+xml;base64,' + svgBase64;
+  });
+}
+
+async function fetchLogoBase64() {
+  try {
+    return await svgToPngBase64(LOGO_SVG_B64, 320, 80);
+  } catch(e) {
+    console.warn('Logo non ajouté:', e);
+    return null;
+  }
+}
+
+/* =========================================================
+   EXCEL EXPORT (ExcelJS)
+   ========================================================= */
+async function exportExcel() {
+  if (typeof ExcelJS === 'undefined') {
+    showToast('Erreur : bibliothèque Excel non chargée', 'error');
+    return;
+  }
+
+  saveLocalSilent();
+
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'Connecteo';
+  wb.created = new Date();
+
+  const ws = wb.addWorksheet('Fiche de Cadrage', {
+    views: [{state: 'frozen', ySplit: 14}]
+  });
+
+  ws.columns = [
+    {width: 42}, {width: 26}, {width: 10}, {width: 14}, {width: 12}, {width: 12},
+    {width: 12}, {width: 12}, {width: 12}, {width: 12}, {width: 20}, {width: 32}
+  ];
+
+  // ===== LOGO =====
+  try {
+    const logoBase64 = await fetchLogoBase64();
+    if (logoBase64) {
+      const imgId = wb.addImage({base64: logoBase64, extension: 'png'});
+      ws.addImage(imgId, {
+        tl: {col: 0, row: 0},
+        ext: {width: 160, height: 40}
+      });
+    }
+  } catch(e) { console.warn('Logo non ajouté:', e); }
+
+  // ===== TITLE =====
+  ws.mergeCells('C2:L2');
+  const titleCell = ws.getCell('C2');
+  titleCell.value = 'FICHE DE CADRAGE — CHECKLIST FORMATION';
+  titleCell.font = {name: 'Calibri', size: 18, bold: true, color: {argb: 'FF0D47A1'}};
+  titleCell.alignment = {horizontal: 'center', vertical: 'middle'};
+  ws.getRow(2).height = 30;
+
+  // ===== DATE =====
+  ws.mergeCells('C3:L3');
+  const dateCell = ws.getCell('C3');
+  const today = new Date().toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'});
+  dateCell.value = 'Édité le ' + today;
+  dateCell.font = {name: 'Calibri', size: 11, italic: true, color: {argb: 'FF757575'}};
+  dateCell.alignment = {horizontal: 'center'};
+
+  // ===== SYNTHESE =====
+  const synthRow = 5;
+  ws.getCell(`A${synthRow}`).value = 'SYNTHÈSE';
+  ws.getCell(`A${synthRow}`).font = {bold: true, size: 13, color: {argb: 'FF00AFA9'}};
+
+  const synthData = [
+    ['Client', state.client || '—'],
+    ['Projet', state.projet || '—'],
+    ['Type de prestation 1', state.type1 || '—'],
+    ['Type de prestation 2', state.type2 || '—'],
+  ];
+  synthData.forEach((r, i) => {
+    const row = synthRow + 1 + i;
+    ws.getCell(`A${row}`).value = r[0];
+    ws.getCell(`A${row}`).font = {bold: true, size: 11};
+    ws.getCell(`B${row}`).value = r[1];
+    ws.getCell(`B${row}`).font = {size: 11};
+  });
+
+  // ===== KPI (formules) =====
+  const dataStartRow = 16;
+  const dataEndRow = dataStartRow + state.actions.length - 1;
+
+  const kpiRow = synthRow + 6;
+  ws.getCell(`A${kpiRow}`).value = "Taux d'avancement global";
+  ws.getCell(`A${kpiRow}`).font = {bold: true, size: 11};
+  ws.getCell(`B${kpiRow}`).value = {
+    formula: `IFERROR(AVERAGEIF(C${dataStartRow}:C${dataEndRow},"<>0",E${dataStartRow}:E${dataEndRow}),"-")`,
+    result: 0
+  };
+  ws.getCell(`B${kpiRow}`).numFmt = '0%';
+
+  ws.getCell(`A${kpiRow+1}`).value = 'Taux de réalisation actif';
+  ws.getCell(`A${kpiRow+1}`).font = {bold: true, size: 11};
+  ws.getCell(`B${kpiRow+1}`).value = {
+    formula: `IFERROR(AVERAGEIFS(E${dataStartRow}:E${dataEndRow},C${dataStartRow}:C${dataEndRow},"<>0",C${dataStartRow}:C${dataEndRow},"<>1"),"-")`,
+    result: 0
+  };
+  ws.getCell(`B${kpiRow+1}`).numFmt = '0%';
+
+  ws.getCell(`A${kpiRow+2}`).value = "Taux d'annulation";
+  ws.getCell(`A${kpiRow+2}`).font = {bold: true, size: 11};
+  ws.getCell(`B${kpiRow+2}`).value = {
+    formula: `COUNTIF(C${dataStartRow}:C${dataEndRow},0)`,
+    result: 0
+  };
+
+  // ===== TABLE HEADER =====
+  const headerRow = 14;
+  const headers = ['LISTE DES ACTIONS','LIVRABLES','STATUT','LIBELLÉ','% RÉALISATION','DÉLAI EST.','DÉLAI RÉEL','DÉBUT','FIN PRÉVUE','FIN RÉELLE','SUPPORT','COMMENTAIRE'];
+  headers.forEach((h, i) => {
+    const cell = ws.getCell(headerRow, i + 1);
+    cell.value = h;
+    cell.font = {bold: true, size: 11, color: {argb: 'FFFFFFFF'}};
+    cell.fill = {type: 'pattern', pattern: 'solid', fgColor: {argb: 'FF0D47A1'}};
+    cell.alignment = {horizontal: 'left', vertical: 'middle', wrapText: true};
+    cell.border = {
+      top: {style: 'thin', color: {argb: 'FF00AFA9'}},
+      bottom: {style: 'thin', color: {argb: 'FF00AFA9'}},
+      left: {style: 'thin', color: {argb: 'FF00AFA9'}},
+      right: {style: 'thin', color: {argb: 'FF00AFA9'}},
+    };
+  });
+  ws.getRow(headerRow).height = 28;
+
+  // ===== TABLE DATA =====
+  state.actions.forEach((a, i) => {
+    const row = dataStartRow + i;
+    ws.getCell(row, 1).value = a.action || '';
+    ws.getCell(row, 2).value = a.livrable || '';
+    ws.getCell(row, 3).value = a.statut;
+    ws.getCell(row, 4).value = {
+      formula: `IFS(C${row}=0,"Annulé",C${row}=1,"A initier",C${row}=2,"En cours",C${row}=3,"Clôturé",TRUE,"")`,
+      result: STATUTS[a.statut].label
+    };
+    ws.getCell(row, 5).value = {
+      formula: `IF(C${row}="","",IFS(C${row}=0,0,C${row}=1,0,C${row}=2,0.5,C${row}=3,1,TRUE,0))`,
+      result: STATUTS[a.statut].pct
+    };
+    ws.getCell(row, 5).numFmt = '0%';
+    ws.getCell(row, 6).value = {
+      formula: `IF(OR(H${row}="",I${row}=""),"",(I${row}-H${row})+1)`,
+      result: null
+    };
+    ws.getCell(row, 7).value = {
+      formula: `IF(OR(H${row}="",J${row}=""),"",(J${row}-H${row})+1)`,
+      result: null
+    };
+    ws.getCell(row, 8).value = a.debut ? new Date(a.debut) : '';
+    ws.getCell(row, 9).value = a.finPrevue ? new Date(a.finPrevue) : '';
+    ws.getCell(row, 10).value = a.finReelle ? new Date(a.finReelle) : '';
+    ws.getCell(row, 8).numFmt = 'dd/mm/yyyy';
+    ws.getCell(row, 9).numFmt = 'dd/mm/yyyy';
+    ws.getCell(row, 10).numFmt = 'dd/mm/yyyy';
+    ws.getCell(row, 11).value = a.support || '';
+    ws.getCell(row, 12).value = a.commentaire || '';
+
+    if (i % 2 === 1) {
+      for (let c = 1; c <= 12; c++) {
+        ws.getCell(row, c).fill = {type: 'pattern', pattern: 'solid', fgColor: {argb: 'FFF9F9F9'}};
+      }
+    }
+
+    for (let c = 1; c <= 12; c++) {
+      ws.getCell(row, c).border = {
+        top: {style: 'thin', color: {argb: 'FFE0E0E0'}},
+        bottom: {style: 'thin', color: {argb: 'FFE0E0E0'}},
+        left: {style: 'thin', color: {argb: 'FFE0E0E0'}},
+        right: {style: 'thin', color: {argb: 'FFE0E0E0'}},
+      };
+      ws.getCell(row, c).alignment = {vertical: 'middle', wrapText: true};
+    }
+  });
+
+  // ===== FOOTER =====
+  const footRow = dataStartRow + state.actions.length + 2;
+  ws.mergeCells(`A${footRow}:L${footRow}`);
+  const footCell = ws.getCell(`A${footRow}`);
+  footCell.value = 'Connecteo 2026 · Chaque expérience est unique';
+  footCell.font = {italic: true, size: 10, color: {argb: 'FF757575'}};
+  footCell.alignment = {horizontal: 'center'};
+
+  // ===== SAVE =====
+  const filename = 'Fiche_Cadrage_' + (state.client || 'Connecteo').replace(/\s+/g,'_') + '_' + new Date().toISOString().slice(0,10) + '.xlsx';
+  const buf = await wb.xlsx.writeBuffer();
+  saveAs(new Blob([buf], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}), filename);
+  showToast('Export Excel réussi ✓', 'success');
+}
+
+/* =========================================================
+   IMPORT XLSX
+   ========================================================= */
+function loadFromXlsx() {
+  document.getElementById('file-import').click();
+}
+document.getElementById('file-import').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  try {
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.load(await file.arrayBuffer());
+    const ws = wb.worksheets[0];
+
+    /* =========================================================
+       Helpers de lecture robustes
+       ========================================================= */
+    const getCellText = (v) => {
+      if (v === null || v === undefined) return '';
+      if (typeof v === 'string') return v;
+      if (typeof v === 'number') return String(v);
+      if (typeof v === 'boolean') return String(v);
+      if (v instanceof Date) {
+        const y = v.getFullYear();
+        const m = String(v.getMonth() + 1).padStart(2, '0');
+        const d = String(v.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+      if (v.richText) return v.richText.map(t => t.text).join('');
+      if (v.text !== undefined) return String(v.text);
+      if (v.hyperlink !== undefined && v.text !== undefined) return String(v.text);
+      if (v.result !== undefined) return getCellText(v.result);
+      // Formule sans résultat calculé → on tente de lire son texte si présent
+      if (v.formula || v.sharedFormula) return v.text ? String(v.text) : '';
+      return String(v);
+    };
+
+    const getCellNum = (v) => {
+      if (v === null || v === undefined) return null;
+      if (typeof v === 'number') return v;
+      if (v.result !== undefined) return getCellNum(v.result);
+      const n = Number(getCellText(v));
+      return isNaN(n) ? null : n;
+    };
+
+    const getCellDate = (v) => {
+      if (v === null || v === undefined || v === '') return '';
+      if (v instanceof Date) {
+        const y = v.getFullYear();
+        const m = String(v.getMonth() + 1).padStart(2, '0');
+        const d = String(v.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+      if (typeof v === 'object' && v.result) return getCellDate(v.result);
+      if (typeof v === 'number') {
+        const epoch = Date.UTC(1899, 11, 30);
+        const jsDate = new Date(epoch + v * 86400000);
+        const y = jsDate.getUTCFullYear();
+        const m = String(jsDate.getUTCMonth() + 1).padStart(2, '0');
+        const d = String(jsDate.getUTCDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+      const s = String(v).trim();
+      if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+      const m1 = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (m1) return `${m1[3]}-${m1[2].padStart(2,'0')}-${m1[1].padStart(2,'0')}`;
+      return '';
+    };
+
+    const readText = (r, c) => getCellText(ws.getCell(r, c).value).trim();
+    const readNum = (r, c) => getCellNum(ws.getCell(r, c).value);
+    const readDate = (r, c) => getCellDate(ws.getCell(r, c).value);
+
+    /* =========================================================
+       Normalisation : retire espaces, ":", accents, minuscules
+       Remplace aussi les NBSP et autres caractères invisibles
+       ========================================================= */
+    const norm = (s) => (s||'').toString()
+      .toLowerCase()
+      .replace(/[\s\u00A0\u200B\u2009\u2002\u2003]+/g, '')
+      .replace(/[éèêë]/g, 'e')
+      .replace(/[àâä]/g, 'a')
+      .replace(/[îï]/g, 'i')
+      .replace(/[ôö]/g, 'o')
+      .replace(/[ûü]/g, 'u')
+      .replace(/[ç]/g, 'c')
+      .replace(/[:'"`]/g, '');
+
+    /* =========================================================
+       🔍 DEBUG — Afficher ce qui est lu pour diagnostiquer
+       ========================================================= */
+    console.log('=== DEBUG IMPORT ===');
+    console.log('Fichier :', file.name);
+    console.log('Feuille :', ws.name, '(lignes:', ws.rowCount, ')');
+
+    /* =========================================================
+       Détection MULTI-CRITÈRES de la ligne d'en-tête
+       ========================================================= */
+    let headerRow = -1;
+    const foundRows = [];
+
+    for (let r = 1; r <= Math.min(300, ws.rowCount + 5); r++) {
+      // Lire les 4 premières cellules de la ligne
+      const cells = [readText(r,1), readText(r,2), readText(r,3), readText(r,4)];
+      const normCells = cells.map(norm);
+
+      // Critère 1 : contient "liste" ET "action" dans une des 4 premières cellules
+      for (let c = 0; c < normCells.length; c++) {
+        if (normCells[c].includes('liste') && normCells[c].includes('action')) {
+          foundRows.push({row: r, method: 'liste+action', cell: c+1, value: cells[c]});
+          break;
+        }
+      }
+      // Critère 2 : contient "livrable" en col B
+      if (normCells[1].includes('livrable')) {
+        foundRows.push({row: r, method: 'livrable en B', cell: 2, value: cells[1]});
+      }
+      // Critère 3 : contient "statut" ET "support" (assez distinctif)
+      if (normCells.some(x => x === 'statut') && normCells.some(x => x.includes('support'))) {
+        foundRows.push({row: r, method: 'statut+support', cell: null, value: cells.join(' | ')});
+      }
+    }
+
+    console.log('Lignes candidates :', foundRows);
+
+    if (foundRows.length > 0) {
+      // Prendre la première ligne candidate
+      headerRow = foundRows[0].row;
+      console.log('Ligne d\'en-tête choisie :', headerRow, '(méthode :', foundRows[0].method + ')');
+    } else {
+      // Fallback : chercher la 1ère ligne contenant "livrable" n'importe où
+      for (let r = 1; r <= Math.min(300, ws.rowCount + 5); r++) {
+        if (norm(readText(r, 1)).includes('livrable') || norm(readText(r, 2)).includes('livrable')) {
+          headerRow = r;
+          console.log('Fallback trouvé à la ligne :', headerRow);
+          break;
+        }
+      }
+    }
+
+    if (headerRow === -1) {
+      // Afficher les 20 premières lignes pour diagnostic
+      const dump = [];
+      for (let r = 1; r <= Math.min(20, ws.rowCount); r++) {
+        dump.push(`L${r}: [${[1,2,3,4].map(c => readText(r,c)).join(' | ')}]`);
+      }
+      console.log('=== CONTENU DES 20 PREMIÈRES LIGNES ===');
+      console.log(dump.join('\n'));
+      throw new Error(
+        'Tableau introuvable.\n\nVérifiez que la feuille contient bien une ligne "LISTE DES ACTIONS" en colonne A.\n' +
+        'Consultez la console (F12) pour voir les 20 premières lignes du fichier.'
+      );
+    }
+
+    /* =========================================================
+       Lecture des infos projet
+       ========================================================= */
+    const findValueByLabels = (labelList) => {
+      for (let r = 1; r < headerRow; r++) {
+        const a = norm(readText(r, 1));
+        if (labelList.some(l => a === norm(l))) {
+          for (let c = 2; c <= 6; c++) {
+            const v = readText(r, c);
+            if (v && v !== '—' && v !== '-') return v;
+          }
+        }
+      }
+      return '';
+    };
+
+    state.client = findValueByLabels(['client', 'client:']);
+    state.projet = findValueByLabels(['projet', 'projet:']);
+    state.type1  = findValueByLabels(['type de prestation 1', 'type de prestation 1:', 'typedeprestation1']);
+    state.type2  = findValueByLabels(['type de prestation 2', 'type de prestation 2:', 'typedeprestation2']);
+
+    /* =========================================================
+       Lecture des actions
+       ========================================================= */
+    const IGNORE_PATTERNS = [
+      'synthese', 'client', 'projet',
+      'typedeprestation1', 'typedeprestation2',
+      'tauxdavancementglobal', 'tauxderealisationactif', 'tauxdannulation',
+      'listedactions', 'livrables', 'statut', 'libelle', 'realisation',
+      'delaiest', 'delaireel', 'debut', 'finprevue', 'finreelle',
+      'support', 'commentaire', 'connecteo2026', 'checklistformation'
+    ];
+    const shouldIgnore = (txt) => {
+      const t = norm(txt);
+      if (!t) return false;
+      return IGNORE_PATTERNS.some(p => t === p || t.startsWith(p));
+    };
+
+    const actions = [];
+    let consecutiveEmpty = 0;
+    const MAX_SCAN = headerRow + 1000;
+
+    for (let r = headerRow + 1; r <= MAX_SCAN; r++) {
+      const action = readText(r, 1);
+      const livrable = readText(r, 2);
+
+      if (!action && !livrable) {
+        consecutiveEmpty++;
+        if (actions.length > 0 && consecutiveEmpty >= 10) break;
+        continue;
+      }
+      consecutiveEmpty = 0;
+
+      if (shouldIgnore(action)) continue;
+
+      let statut = 1;
+      const sNum = readNum(r, 3);
+      if (sNum !== null && [0,1,2,3].includes(Math.round(sNum))) {
+        statut = Math.round(sNum);
+      }
+
+      actions.push({
+        action:      action,
+        livrable:    livrable,
+        statut:      statut,
+        debut:       readDate(r, 8),
+        finPrevue:   readDate(r, 9),
+        finReelle:   readDate(r, 10),
+        support:     readText(r, 11),
+        commentaire: readText(r, 12)
+      });
+    }
+
+    console.log('Actions extraites :', actions.length, actions);
+
+    /* =========================================================
+       Appliquer
+       ========================================================= */
+    if (actions.length === 0) {
+      const ok = window.confirm(
+        "Aucune action détectée dans le fichier.\n\n" +
+        "Voulez-vous seulement mettre à jour les informations du projet et garder les actions actuelles ?"
+      );
+      if (!ok) { e.target.value = ''; return; }
+    } else {
+      state.actions = actions;
+    }
+
+    fillInfo();
+    renderTable();
+    updateKPI();
+    saveLocalSilent();
+
+    showToast('Import réussi : ' + actions.length + ' action(s) chargée(s)', 'success');
+
+  } catch(err) {
+    console.error(err);
+    showToast('Erreur d\'import : ' + err.message, 'error');
+  }
+  e.target.value = '';
+});
+init();
+</script>
+</body>
+</html>
