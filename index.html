@@ -271,25 +271,189 @@ const DEFAULT_ACTIONS = [
 ];
 
 let state = { client: '', projet: '', type1: '', type2: '', actions: [] };
+/* =========================================================
+   MULTI-PROJETS — Stockage local
+   ========================================================= */
+const APP_KEY = 'connecteo_cadrage_app_v1';
 
+let app = { currentId: null, projects: [] };
+
+function loadApp() {
+  try {
+    const raw = localStorage.getItem(APP_KEY);
+    if (raw) {
+      app = JSON.parse(raw);
+      if (!app.projects) app.projects = [];
+    }
+  } catch(e) { app = { currentId: null, projects: [] }; }
+
+  // Migration depuis l'ancienne clé
+  if (app.projects.length === 0 && localStorage.getItem('connecteo_cadrage_v1')) {
+    try {
+      const old = JSON.parse(localStorage.getItem('connecteo_cadrage_v1'));
+      if (old && old.actions) {
+        const id = 'proj_' + Date.now();
+        app.projects.push({
+          id,
+          name: (old.client || 'Sans client') + ' — ' + (old.projet || 'Sans projet'),
+          client: old.client || '',
+          projet: old.projet || '',
+          type1: old.type1 || '',
+          type2: old.type2 || '',
+          actions: old.actions,
+          updated: new Date().toISOString()
+        });
+        app.currentId = id;
+        localStorage.removeItem('connecteo_cadrage_v1');
+      }
+    } catch(e) {}
+  }
+  saveApp();
+}
+
+function saveApp() {
+  localStorage.setItem(APP_KEY, JSON.stringify(app));
+}
+
+function getCurrentProject() {
+  return app.projects.find(p => p.id === app.currentId) || null;
+}
+
+function refreshProjectSelect() {
+  const sel = document.getElementById('project-select');
+  if (!sel) return;
+  const cur = app.currentId;
+  sel.innerHTML = '<option value="">— Aucun projet —</option>';
+  app.projects
+    .slice()
+    .sort((a,b) => (b.updated||'').localeCompare(a.updated||''))
+    .forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name || '(Sans nom)';
+      if (p.id === cur) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  const info = document.getElementById('project-info');
+  const proj = getCurrentProject();
+  if (info) {
+    if (proj) {
+      const upd = proj.updated ? new Date(proj.updated).toLocaleString('fr-FR') : '—';
+      info.textContent = 'Dernière mise à jour : ' + upd + ' · ' + (proj.actions||[]).length + ' action(s)';
+    } else {
+      info.textContent = 'Aucun projet ouvert. Créez-en un ou sélectionnez-en un dans la liste.';
+    }
+  }
+}
+
+function newProject() {
+  const client = prompt("Nom du client ?", "");
+  if (client === null) return;
+  const projet = prompt("Nom du projet ?", "");
+  if (projet === null) return;
+
+  const id = 'proj_' + Date.now();
+  app.projects.push({
+    id,
+    name: (client || 'Sans client') + ' — ' + (projet || 'Sans projet'),
+    client: client || '',
+    projet: projet || '',
+    type1: '',
+    type2: '',
+    actions: JSON.parse(JSON.stringify(DEFAULT_ACTIONS)),
+    updated: new Date().toISOString()
+  });
+  app.currentId = id;
+  saveApp();
+  loadCurrentIntoUI();
+  refreshProjectSelect();
+  showToast('Nouveau projet créé ✓', 'success');
+}
+
+function deleteProject() {
+  const proj = getCurrentProject();
+  if (!proj) { showToast('Aucun projet sélectionné', 'error'); return; }
+  if (!confirm('Supprimer définitivement le projet "' + proj.name + '" ?')) return;
+  app.projects = app.projects.filter(p => p.id !== proj.id);
+  app.currentId = app.projects.length > 0 ? app.projects[0].id : null;
+  saveApp();
+  loadCurrentIntoUI();
+  refreshProjectSelect();
+  showToast('Projet supprimé', 'success');
+}
+
+function renameProject() {
+  const proj = getCurrentProject();
+  if (!proj) { showToast('Aucun projet sélectionné', 'error'); return; }
+  const nv = prompt("Nouveau nom du projet ?", proj.name);
+  if (nv === null || !nv.trim()) return;
+  proj.name = nv.trim();
+  proj.updated = new Date().toISOString();
+  saveApp();
+  refreshProjectSelect();
+}
+
+function switchProject(id) {
+  if (!id) {
+    app.currentId = null;
+    saveApp();
+    loadCurrentIntoUI();
+    refreshProjectSelect();
+    return;
+  }
+  app.currentId = id;
+  saveApp();
+  loadCurrentIntoUI();
+  refreshProjectSelect();
+}
+
+function loadCurrentIntoUI() {
+  const proj = getCurrentProject();
+  if (!proj) {
+    document.getElementById('client').value = '';
+    document.getElementById('projet').value = '';
+    document.getElementById('type1').value = '';
+    document.getElementById('type2').value = '';
+    state = { client:'', projet:'', type1:'', type2:'', actions: [] };
+    renderTable();
+    updateKPI();
+    return;
+  }
+  state = {
+    client: proj.client,
+    projet: proj.projet,
+    type1: proj.type1,
+    type2: proj.type2,
+    actions: JSON.parse(JSON.stringify(proj.actions || []))
+  };
+  document.getElementById('client').value = state.client || '';
+  document.getElementById('projet').value = state.projet || '';
+  document.getElementById('type1').value = state.type1 || '';
+  document.getElementById('type2').value = state.type2 || '';
+  renderTable();
+  updateKPI();
+}
 /* =========================================================
    INIT
    ========================================================= */
 function init() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    try {
-      state = JSON.parse(saved);
-      if (!state.actions || !state.actions.length) state.actions = [...DEFAULT_ACTIONS];
-    } catch(e) {
-      state = {client:'', projet:'', type1:'', type2:'', actions: [...DEFAULT_ACTIONS]};
-    }
-  } else {
-    state = {client:'', projet:'', type1:'', type2:'', actions: [...DEFAULT_ACTIONS]};
+  loadApp();
+  if (app.projects.length === 0) {
+    const id = 'proj_' + Date.now();
+    app.projects.push({
+      id,
+      name: 'Nouveau projet',
+      client: '', projet: '', type1: '', type2: '',
+      actions: JSON.parse(JSON.stringify(DEFAULT_ACTIONS)),
+      updated: new Date().toISOString()
+    });
+    app.currentId = id;
+    saveApp();
+  } else if (!app.currentId || !app.projects.find(p => p.id === app.currentId)) {
+    app.currentId = app.projects[0].id;
   }
-  fillInfo();
-  renderTable();
-  updateKPI();
+  loadCurrentIntoUI();
+  refreshProjectSelect();
 }
 
 function fillInfo() {
@@ -408,7 +572,21 @@ function saveLocalSilent() {
   state.projet = document.getElementById('projet').value;
   state.type1 = document.getElementById('type1').value;
   state.type2 = document.getElementById('type2').value;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+  const proj = getCurrentProject();
+  if (proj) {
+    proj.client = state.client;
+    proj.projet = state.projet;
+    proj.type1 = state.type1;
+    proj.type2 = state.type2;
+    proj.actions = JSON.parse(JSON.stringify(state.actions));
+    proj.updated = new Date().toISOString();
+    if (!proj.name || proj.name === 'Sans client — Sans projet') {
+      proj.name = (state.client || 'Sans client') + ' — ' + (state.projet || 'Sans projet');
+    }
+    saveApp();
+    refreshProjectSelect();
+  }
 }
 
 function saveLocal() {
