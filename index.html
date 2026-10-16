@@ -168,8 +168,7 @@ td.computed.statut-3{color:var(--success)}
     <h2><i class="fas fa-info-circle"></i> Synthèse de la prestation</h2>
     <div class="info-grid">
       <div class="field"><label>Client</label><input type="text" id="client" placeholder="Ex. PAMF"></div>
-      <div class="field"><label>Projet</label><input type="text" id="projet" placeholder="Ex. Consulting"></div>
-      <div class="field"><label>Type de prestation 1</label><input type="text" id="type1" placeholder="Ex. Formation - GRC - Recouvrement"></div>
+    <div class="field"><label>Tenant — service en charge</label><input type="text" id="projet" placeholder="Ex. Marketing, RH, DSIO..."></div>      <div class="field"><label>Type de prestation 1</label><input type="text" id="type1" placeholder="Ex. Formation - GRC - Recouvrement"></div>
       <div class="field"><label>Type de prestation 2</label><input type="text" id="type2" placeholder="Ex. Accompagnement et Repiquage"></div>
     </div>
   </div>
@@ -221,6 +220,7 @@ td.computed.statut-3{color:var(--success)}
       </table>
     </div>
     <div class="actions-bar">
+      <button class="btn ghost" onclick="loadTemplate()" title="Charge les 13 actions standards Connecteo"><i class="fas fa-wand-magic-sparkles"></i> Charger le modèle</button>
       <button class="btn ghost" onclick="addRow()"><i class="fas fa-plus"></i> Ajouter une action</button>
       <button class="btn primary" onclick="saveLocal()"><i class="fas fa-save"></i> Sauvegarder</button>
       <button class="btn accent" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Exporter Excel</button>
@@ -349,25 +349,25 @@ function refreshProjectSelect() {
 function newProject() {
   const client = prompt("Nom du client ?", "");
   if (client === null) return;
-  const projet = prompt("Nom du projet ?", "");
-  if (projet === null) return;
+  const tenant = prompt("Service en charge (Tenant) ?", "");
+  if (tenant === null) return;
 
   const id = 'proj_' + Date.now();
   app.projects.push({
     id,
-    name: (client || 'Sans client') + ' — ' + (projet || 'Sans projet'),
+    name: (client || 'Sans client') + ' — ' + (tenant || 'Sans service'),
     client: client || '',
-    projet: projet || '',
+    projet: tenant || '',        // on réutilise le champ "projet" en interne
     type1: '',
     type2: '',
-    actions: JSON.parse(JSON.stringify(DEFAULT_ACTIONS)),
+    actions: [],                 // ← TABLEAU VIDE
     updated: new Date().toISOString()
   });
   app.currentId = id;
   saveApp();
   loadCurrentIntoUI();
   refreshProjectSelect();
-  showToast('Nouveau projet créé ✓', 'success');
+  showToast('Fiche créée — ajoutez vos actions ✓', 'success');
 }
 
 function deleteProject() {
@@ -607,22 +607,24 @@ function saveLocal() {
 }
 
 function resetAll() {
-  if (!confirm('Remettre le projet complètement à zéro ?\n\n(Client, Projet, Types ET Actions seront effacés)')) return;
+  if (!confirm('Vider toutes les actions du projet en cours ?\n\n(Client, Tenant et Types sont conservés)')) return;
   const proj = getCurrentProject();
   if (!proj) return;
-  proj.actions = [];
-  proj.client = '';
-  proj.projet = '';
-  proj.type1 = '';
-  proj.type2 = '';
-  proj.name = 'Nouveau projet';
+  proj.actions = [];                                // ← vide seulement les actions
   proj.updated = new Date().toISOString();
   saveApp();
   loadCurrentIntoUI();
   refreshProjectSelect();
-  showToast('Projet remis à zéro ✓', 'success');
+  showToast('Tableau vidé ✓', 'success');
 }
-
+function loadTemplate() {
+  if (!confirm('Charger le modèle Connecteo (13 actions) dans le projet en cours ?\n\nLes actions actuelles seront remplacées.')) return;
+  state.actions = JSON.parse(JSON.stringify(DEFAULT_ACTIONS));
+  renderTable();
+  updateKPI();
+  saveLocalSilent();
+  showToast('Modèle Connecteo chargé ✓', 'success');
+}
 /* =========================================================
    TOAST
    ========================================================= */
@@ -725,7 +727,7 @@ async function exportExcel() {
 
   const synthData = [
     ['Client', state.client || '—'],
-    ['Projet', state.projet || '—'],
+['Tenant', state.projet || '—'],
     ['Type de prestation 1', state.type1 || '—'],
     ['Type de prestation 2', state.type2 || '—'],
   ];
@@ -1019,7 +1021,7 @@ document.getElementById('file-import').addEventListener('change', async (e) => {
     };
 
     state.client = findValueByLabels(['client', 'client:']);
-    state.projet = findValueByLabels(['projet', 'projet:']);
+    state.projet = findValueByLabels(['projet', 'projet:', 'tenant', 'tenant:', 'owner', 'owner:']);
     state.type1  = findValueByLabels(['type de prestation 1', 'type de prestation 1:', 'typedeprestation1']);
     state.type2  = findValueByLabels(['type de prestation 2', 'type de prestation 2:', 'typedeprestation2']);
 
